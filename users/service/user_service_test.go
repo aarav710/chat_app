@@ -3,17 +3,37 @@ package service
 import (
 	"testing"
 
-  mockUserRepo "chatapp/backend/mock/users/repo"
+	"chatapp/backend/ent"
+	mockUserRepo "chatapp/backend/mock/users/repo"
+	"reflect"
+
 	"github.com/golang/mock/gomock"
 )
 
 func TestGetUserById(t *testing.T) {
-  ctrl := gomock.NewController(t)
+	ctrl := gomock.NewController(t)
 
 	defer ctrl.Finish()
-
 	userRepoMock := mockUserRepo.NewMockUserRepo(ctrl)
-	userRepoMock.EXPECT().GetUserById(5).Return(nil)
-	userService := NewUserService(userRepoMock)
-  userService.GetUserById(5)
+	userId := 5
+	t.Run("user does not exist", func(t *testing.T) {
+		userRepoMock.EXPECT().GetUserById(userId).Return(nil)
+		userService := NewUserService(userRepoMock)
+		user := userService.GetUserById(userId)
+		if user != nil {
+			t.Errorf("Incorrect response from user service")
+		}
+	})
+  t.Run("user exists", func(t *testing.T) {
+		expectUser := &ent.User{
+      ID: 5,
+      Bio: "hello world!",
+		}
+		userRepoMock.EXPECT().GetUserById(userId).Return(expectUser)
+		userService := NewUserService(userRepoMock)
+		user := *userService.GetUserById(userId)
+		if !reflect.DeepEqual(user, *expectUser) {
+			t.Errorf("Incorrect response from user service")
+		}
+	})
 }
