@@ -35,11 +35,12 @@ func (m *MockUserService) EXPECT() *MockUserServiceMockRecorder {
 }
 
 // GetUserById mocks base method.
-func (m *MockUserService) GetUserById(userId int) *ent.User {
+func (m *MockUserService) GetUserById(userId int) (*ent.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserById", userId)
 	ret0, _ := ret[0].(*ent.User)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GetUserById indicates an expected call of GetUserById.

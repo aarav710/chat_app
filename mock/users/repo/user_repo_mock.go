@@ -35,11 +35,12 @@ func (m *MockUserRepo) EXPECT() *MockUserRepoMockRecorder {
 }
 
 // GetUserByEmail mocks base method.
-func (m *MockUserRepo) GetUserByEmail(email string) *ent.User {
+func (m *MockUserRepo) GetUserByEmail(email string) (*ent.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserByEmail", email)
 	ret0, _ := ret[0].(*ent.User)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GetUserByEmail indicates an expected call of GetUserByEmail.
@@ -49,11 +50,12 @@ func (mr *MockUserRepoMockRecorder) GetUserByEmail(email interface{}) *gomock.Ca
 }
 
 // GetUserById mocks base method.
-func (m *MockUserRepo) GetUserById(id int) *ent.User {
+func (m *MockUserRepo) GetUserById(id int) (*ent.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserById", id)
 	ret0, _ := ret[0].(*ent.User)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GetUserById indicates an expected call of GetUserById.
@@ -63,11 +65,12 @@ func (mr *MockUserRepoMockRecorder) GetUserById(id interface{}) *gomock.Call {
 }
 
 // GetUsersContainingUsername mocks base method.
-func (m *MockUserRepo) GetUsersContainingUsername(username string) []*ent.User {
+func (m *MockUserRepo) GetUsersContainingUsername(username string) ([]*ent.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUsersContainingUsername", username)
 	ret0, _ := ret[0].([]*ent.User)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GetUsersContainingUsername indicates an expected call of GetUsersContainingUsername.

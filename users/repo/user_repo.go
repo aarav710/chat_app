@@ -9,9 +9,9 @@ import (
 
 
 type UserRepo interface {
-	GetUserById(id int) *ent.User
-	GetUserByEmail(email string) *ent.User
-	GetUsersContainingUsername(username string) []*ent.User
+	GetUserById(id int) (*ent.User, error)
+	GetUserByEmail(email string) (*ent.User, error)
+	GetUsersContainingUsername(username string) ([]*ent.User, error)
 }
 
 type UserRepoImpl struct {
@@ -23,17 +23,17 @@ func NewUserRepo(ctx context.Context, db *ent.Client) UserRepo {
 	return &UserRepoImpl{ctx: ctx, db: db}
 }
 
-func (repo *UserRepoImpl) GetUserById(id int) *ent.User {
-  user, _ := repo.db.User.Query().Where(user.ID(id)).Only(repo.ctx)
-	return user
+func (repo *UserRepoImpl) GetUserById(id int) (*ent.User, error) {
+  user, err := repo.db.User.Query().Where(user.ID(id)).Only(repo.ctx)
+	return user, err
 }
 
-func (repo *UserRepoImpl) GetUserByEmail(email string) *ent.User {
-	user, _ := repo.db.Login.Query().Where(login.Email(email)).QueryUser().Only(repo.ctx)
-	return user
+func (repo *UserRepoImpl) GetUserByEmail(email string) (*ent.User, error) {
+	user, err := repo.db.Login.Query().Where(login.Email(email)).QueryUser().Only(repo.ctx)
+	return user, err
 }
 
-func (repo *UserRepoImpl) GetUsersContainingUsername(username string) []*ent.User {
-	users, _ := repo.db.Login.Query().Where(login.UsernameContains(username)).QueryUser().All(repo.ctx)
-	return users
+func (repo *UserRepoImpl) GetUsersContainingUsername(username string) ([]*ent.User, error) {
+	users, err := repo.db.Login.Query().Where(login.UsernameContains(username)).QueryUser().All(repo.ctx)
+	return users, err
 }

@@ -1,14 +1,14 @@
 package errors
 
 
-type NotFoundError struct {
+type InvalidNumericParameterInputError struct {
 	message string
 }
 
-func (err NotFoundError) Error() string {
+func (err InvalidNumericParameterInputError) Error() string {
   return err.message
 }
 
-func NewNotFoundError(message string) error {
-	return NotFoundError{message: message}
+func NewInvalidNumericParameterInputError() error {
+	return InvalidNumericParameterInputError{message: "invalid input parameter type. provide an integer instead"}
 }

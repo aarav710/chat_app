@@ -3,6 +3,7 @@ package db
 import (
 	"chatapp/backend/ent"
 	"log"
+	"os"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -14,7 +15,7 @@ func Open() (*ent.Client, error) {
     log.Fatalf("Error loading .env file")
   }
 
-	dbConnectionString := "postgres://aaravjain:@localhost:5432/chatapp?sslmode=disable"
+	dbConnectionString := os.Getenv("DB_CONNECTION_STRING")
 	client, err := ent.Open("postgres", dbConnectionString)
 	return client, err
 }

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"testing"
 
 	"chatapp/backend/ent"
@@ -17,10 +18,10 @@ func TestGetUserById(t *testing.T) {
 	userRepoMock := mockUserRepo.NewMockUserRepo(ctrl)
 	userId := 5
 	t.Run("user does not exist", func(t *testing.T) {
-		userRepoMock.EXPECT().GetUserById(userId).Return(nil)
+		userRepoMock.EXPECT().GetUserById(userId).Return(nil, errors.New("not found error"))
 		userService := NewUserService(userRepoMock)
-		user := userService.GetUserById(userId)
-		if user != nil {
+		user, err := userService.GetUserById(userId)
+		if user != nil || err == nil {
 			t.Errorf("Incorrect response from user service")
 		}
 	})
@@ -29,11 +30,14 @@ func TestGetUserById(t *testing.T) {
       ID: 5,
       Bio: "hello world!",
 		}
-		userRepoMock.EXPECT().GetUserById(userId).Return(expectUser)
+		userRepoMock.EXPECT().GetUserById(userId).Return(expectUser, nil)
 		userService := NewUserService(userRepoMock)
-		user := *userService.GetUserById(userId)
-		if !reflect.DeepEqual(user, *expectUser) {
+		user, err := userService.GetUserById(userId)
+		if !reflect.DeepEqual(*user, *expectUser) {
 			t.Errorf("Incorrect response from user service")
+		}
+		if err != nil {
+      t.Errorf("expected no problem from user service.")
 		}
 	})
 }
