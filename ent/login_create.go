@@ -33,9 +33,9 @@ func (lc *LoginCreate) SetEmail(s string) *LoginCreate {
 	return lc
 }
 
-// SetUUID sets the "uuid" field.
-func (lc *LoginCreate) SetUUID(s string) *LoginCreate {
-	lc.mutation.SetUUID(s)
+// SetUID sets the "uid" field.
+func (lc *LoginCreate) SetUID(s string) *LoginCreate {
+	lc.mutation.SetUID(s)
 	return lc
 }
 
@@ -169,8 +169,8 @@ func (lc *LoginCreate) check() error {
 	if _, ok := lc.mutation.Email(); !ok {
 		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "Login.email"`)}
 	}
-	if _, ok := lc.mutation.UUID(); !ok {
-		return &ValidationError{Name: "uuid", err: errors.New(`ent: missing required field "Login.uuid"`)}
+	if _, ok := lc.mutation.UID(); !ok {
+		return &ValidationError{Name: "uid", err: errors.New(`ent: missing required field "Login.uid"`)}
 	}
 	if _, ok := lc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Login.created_at"`)}
@@ -226,13 +226,13 @@ func (lc *LoginCreate) createSpec() (*Login, *sqlgraph.CreateSpec) {
 		})
 		_node.Email = value
 	}
-	if value, ok := lc.mutation.UUID(); ok {
+	if value, ok := lc.mutation.UID(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: login.FieldUUID,
+			Column: login.FieldUID,
 		})
-		_node.UUID = value
+		_node.UID = value
 	}
 	if value, ok := lc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

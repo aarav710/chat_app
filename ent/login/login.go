@@ -16,8 +16,8 @@ const (
 	FieldUsername = "username"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
-	// FieldUUID holds the string denoting the uuid field in the database.
-	FieldUUID = "uuid"
+	// FieldUID holds the string denoting the uid field in the database.
+	FieldUID = "uid"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldStatus holds the string denoting the status field in the database.
@@ -40,7 +40,7 @@ var Columns = []string{
 	FieldID,
 	FieldUsername,
 	FieldEmail,
-	FieldUUID,
+	FieldUID,
 	FieldCreatedAt,
 	FieldStatus,
 }

@@ -18,7 +18,7 @@ func (Login) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("username").Unique(),
 		field.String("email").Unique(),
-		field.String("uuid").Unique(),
+		field.String("uid").Unique(),
 		field.Time("created_at").Default(time.Now),
 		field.Enum("status").Values("USER", "INCOMPLETE_REGISTRATION"),
 	}
@@ -28,5 +28,5 @@ func (Login) Fields() []ent.Field {
 func (Login) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("user", User.Type).Unique(),
-}
+	}
 }

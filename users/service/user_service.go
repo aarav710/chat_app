@@ -8,6 +8,7 @@ import (
 type UserService interface {
 	GetUserById(userId int) (*ent.User, error)
 	GetUsersByUsername(username string) ([]*ent.User, error)
+	GetUserByUid(uid string) (*ent.User, error)
 }
 
 type UserServiceImpl struct {
@@ -33,4 +34,12 @@ func (service *UserServiceImpl) GetUsersByUsername(username string) ([]*ent.User
 		return nil, err
 	}
 	return users, err
+}
+
+func (service *UserServiceImpl) GetUserByUid(uid string)(*ent.User, error) {
+	user, err := service.userRepo.GetUserByUid(uid)
+	if err != nil {
+		return nil, err
+	}
+	return user, err
 }

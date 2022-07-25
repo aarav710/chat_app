@@ -95,10 +95,10 @@ func Email(v string) predicate.Login {
 	})
 }
 
-// UUID applies equality check predicate on the "uuid" field. It's identical to UUIDEQ.
-func UUID(v string) predicate.Login {
+// UID applies equality check predicate on the "uid" field. It's identical to UIDEQ.
+func UID(v string) predicate.Login {
 	return predicate.Login(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldUUID), v))
+		s.Where(sql.EQ(s.C(FieldUID), v))
 	})
 }
 
@@ -331,22 +331,22 @@ func EmailContainsFold(v string) predicate.Login {
 	})
 }
 
-// UUIDEQ applies the EQ predicate on the "uuid" field.
-func UUIDEQ(v string) predicate.Login {
+// UIDEQ applies the EQ predicate on the "uid" field.
+func UIDEQ(v string) predicate.Login {
 	return predicate.Login(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldUUID), v))
+		s.Where(sql.EQ(s.C(FieldUID), v))
 	})
 }
 
-// UUIDNEQ applies the NEQ predicate on the "uuid" field.
-func UUIDNEQ(v string) predicate.Login {
+// UIDNEQ applies the NEQ predicate on the "uid" field.
+func UIDNEQ(v string) predicate.Login {
 	return predicate.Login(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldUUID), v))
+		s.Where(sql.NEQ(s.C(FieldUID), v))
 	})
 }
 
-// UUIDIn applies the In predicate on the "uuid" field.
-func UUIDIn(vs ...string) predicate.Login {
+// UIDIn applies the In predicate on the "uid" field.
+func UIDIn(vs ...string) predicate.Login {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -358,12 +358,12 @@ func UUIDIn(vs ...string) predicate.Login {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.In(s.C(FieldUUID), v...))
+		s.Where(sql.In(s.C(FieldUID), v...))
 	})
 }
 
-// UUIDNotIn applies the NotIn predicate on the "uuid" field.
-func UUIDNotIn(vs ...string) predicate.Login {
+// UIDNotIn applies the NotIn predicate on the "uid" field.
+func UIDNotIn(vs ...string) predicate.Login {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -375,70 +375,70 @@ func UUIDNotIn(vs ...string) predicate.Login {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.NotIn(s.C(FieldUUID), v...))
+		s.Where(sql.NotIn(s.C(FieldUID), v...))
 	})
 }
 
-// UUIDGT applies the GT predicate on the "uuid" field.
-func UUIDGT(v string) predicate.Login {
+// UIDGT applies the GT predicate on the "uid" field.
+func UIDGT(v string) predicate.Login {
 	return predicate.Login(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldUUID), v))
+		s.Where(sql.GT(s.C(FieldUID), v))
 	})
 }
 
-// UUIDGTE applies the GTE predicate on the "uuid" field.
-func UUIDGTE(v string) predicate.Login {
+// UIDGTE applies the GTE predicate on the "uid" field.
+func UIDGTE(v string) predicate.Login {
 	return predicate.Login(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldUUID), v))
+		s.Where(sql.GTE(s.C(FieldUID), v))
 	})
 }
 
-// UUIDLT applies the LT predicate on the "uuid" field.
-func UUIDLT(v string) predicate.Login {
+// UIDLT applies the LT predicate on the "uid" field.
+func UIDLT(v string) predicate.Login {
 	return predicate.Login(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldUUID), v))
+		s.Where(sql.LT(s.C(FieldUID), v))
 	})
 }
 
-// UUIDLTE applies the LTE predicate on the "uuid" field.
-func UUIDLTE(v string) predicate.Login {
+// UIDLTE applies the LTE predicate on the "uid" field.
+func UIDLTE(v string) predicate.Login {
 	return predicate.Login(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldUUID), v))
+		s.Where(sql.LTE(s.C(FieldUID), v))
 	})
 }
 
-// UUIDContains applies the Contains predicate on the "uuid" field.
-func UUIDContains(v string) predicate.Login {
+// UIDContains applies the Contains predicate on the "uid" field.
+func UIDContains(v string) predicate.Login {
 	return predicate.Login(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldUUID), v))
+		s.Where(sql.Contains(s.C(FieldUID), v))
 	})
 }
 
-// UUIDHasPrefix applies the HasPrefix predicate on the "uuid" field.
-func UUIDHasPrefix(v string) predicate.Login {
+// UIDHasPrefix applies the HasPrefix predicate on the "uid" field.
+func UIDHasPrefix(v string) predicate.Login {
 	return predicate.Login(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldUUID), v))
+		s.Where(sql.HasPrefix(s.C(FieldUID), v))
 	})
 }
 
-// UUIDHasSuffix applies the HasSuffix predicate on the "uuid" field.
-func UUIDHasSuffix(v string) predicate.Login {
+// UIDHasSuffix applies the HasSuffix predicate on the "uid" field.
+func UIDHasSuffix(v string) predicate.Login {
 	return predicate.Login(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldUUID), v))
+		s.Where(sql.HasSuffix(s.C(FieldUID), v))
 	})
 }
 
-// UUIDEqualFold applies the EqualFold predicate on the "uuid" field.
-func UUIDEqualFold(v string) predicate.Login {
+// UIDEqualFold applies the EqualFold predicate on the "uid" field.
+func UIDEqualFold(v string) predicate.Login {
 	return predicate.Login(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldUUID), v))
+		s.Where(sql.EqualFold(s.C(FieldUID), v))
 	})
 }
 
-// UUIDContainsFold applies the ContainsFold predicate on the "uuid" field.
-func UUIDContainsFold(v string) predicate.Login {
+// UIDContainsFold applies the ContainsFold predicate on the "uid" field.
+func UIDContainsFold(v string) predicate.Login {
 	return predicate.Login(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldUUID), v))
+		s.Where(sql.ContainsFold(s.C(FieldUID), v))
 	})
 }
 

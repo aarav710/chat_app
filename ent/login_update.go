@@ -41,9 +41,9 @@ func (lu *LoginUpdate) SetEmail(s string) *LoginUpdate {
 	return lu
 }
 
-// SetUUID sets the "uuid" field.
-func (lu *LoginUpdate) SetUUID(s string) *LoginUpdate {
-	lu.mutation.SetUUID(s)
+// SetUID sets the "uid" field.
+func (lu *LoginUpdate) SetUID(s string) *LoginUpdate {
+	lu.mutation.SetUID(s)
 	return lu
 }
 
@@ -199,11 +199,11 @@ func (lu *LoginUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: login.FieldEmail,
 		})
 	}
-	if value, ok := lu.mutation.UUID(); ok {
+	if value, ok := lu.mutation.UID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: login.FieldUUID,
+			Column: login.FieldUID,
 		})
 	}
 	if value, ok := lu.mutation.CreatedAt(); ok {
@@ -286,9 +286,9 @@ func (luo *LoginUpdateOne) SetEmail(s string) *LoginUpdateOne {
 	return luo
 }
 
-// SetUUID sets the "uuid" field.
-func (luo *LoginUpdateOne) SetUUID(s string) *LoginUpdateOne {
-	luo.mutation.SetUUID(s)
+// SetUID sets the "uid" field.
+func (luo *LoginUpdateOne) SetUID(s string) *LoginUpdateOne {
+	luo.mutation.SetUID(s)
 	return luo
 }
 
@@ -474,11 +474,11 @@ func (luo *LoginUpdateOne) sqlSave(ctx context.Context) (_node *Login, err error
 			Column: login.FieldEmail,
 		})
 	}
-	if value, ok := luo.mutation.UUID(); ok {
+	if value, ok := luo.mutation.UID(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: login.FieldUUID,
+			Column: login.FieldUID,
 		})
 	}
 	if value, ok := luo.mutation.CreatedAt(); ok {

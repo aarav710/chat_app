@@ -21,8 +21,8 @@ type Login struct {
 	Username string `json:"username,omitempty"`
 	// Email holds the value of the "email" field.
 	Email string `json:"email,omitempty"`
-	// UUID holds the value of the "uuid" field.
-	UUID string `json:"uuid,omitempty"`
+	// UID holds the value of the "uid" field.
+	UID string `json:"uid,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Status holds the value of the "status" field.
@@ -62,7 +62,7 @@ func (*Login) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case login.FieldID:
 			values[i] = new(sql.NullInt64)
-		case login.FieldUsername, login.FieldEmail, login.FieldUUID, login.FieldStatus:
+		case login.FieldUsername, login.FieldEmail, login.FieldUID, login.FieldStatus:
 			values[i] = new(sql.NullString)
 		case login.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -99,11 +99,11 @@ func (l *Login) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				l.Email = value.String
 			}
-		case login.FieldUUID:
+		case login.FieldUID:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field uuid", values[i])
+				return fmt.Errorf("unexpected type %T for field uid", values[i])
 			} else if value.Valid {
-				l.UUID = value.String
+				l.UID = value.String
 			}
 		case login.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -156,8 +156,8 @@ func (l *Login) String() string {
 	builder.WriteString("email=")
 	builder.WriteString(l.Email)
 	builder.WriteString(", ")
-	builder.WriteString("uuid=")
-	builder.WriteString(l.UUID)
+	builder.WriteString("uid=")
+	builder.WriteString(l.UID)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(l.CreatedAt.Format(time.ANSIC))

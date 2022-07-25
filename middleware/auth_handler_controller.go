@@ -25,15 +25,15 @@ func (controller *AuthenticationControllerImpl) AuthorizeUser(roles []string) gi
 	return func(c *gin.Context) {
 		authToken := c.Request.Header.Get("authorization")
 		splitToken := strings.Split(authToken, "Bearer ")
-    authToken = splitToken[1]
+		authToken = splitToken[1]
 		uid, claims, err := controller.authService.VerifyUserIdToken(authToken)
 		if err != nil {
 			c.Error(err)
 			return
 		}
-    for _, role := range roles {
+		for _, role := range roles {
 			if claims[role] == nil {
-        c.Error(errors.NewUnauthorizedError())
+				c.Error(errors.NewUnauthorizedError())
 				return
 			}
 		}

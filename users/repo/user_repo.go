@@ -12,6 +12,7 @@ type UserRepo interface {
 	GetUserById(id int) (*ent.User, error)
 	GetUserByEmail(email string) (*ent.User, error)
 	GetUsersContainingUsername(username string) ([]*ent.User, error)
+	GetUserByUid(uid string) (*ent.User, error)
 }
 
 type UserRepoImpl struct {
@@ -36,4 +37,9 @@ func (repo *UserRepoImpl) GetUserByEmail(email string) (*ent.User, error) {
 func (repo *UserRepoImpl) GetUsersContainingUsername(username string) ([]*ent.User, error) {
 	users, err := repo.db.Login.Query().Where(login.UsernameContains(username)).QueryUser().All(repo.ctx)
 	return users, err
+}
+
+func (repo *UserRepoImpl) GetUserByUid(uid string) (*ent.User, error) {
+	user, err := repo.db.Login.Query().Where(login.UID(uid)).QueryUser().Only(repo.ctx)
+	return user, err
 }

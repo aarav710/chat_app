@@ -1130,7 +1130,7 @@ type LoginMutation struct {
 	id            *int
 	username      *string
 	email         *string
-	uuid          *string
+	uid           *string
 	created_at    *time.Time
 	status        *login.Status
 	clearedFields map[string]struct{}
@@ -1311,40 +1311,40 @@ func (m *LoginMutation) ResetEmail() {
 	m.email = nil
 }
 
-// SetUUID sets the "uuid" field.
-func (m *LoginMutation) SetUUID(s string) {
-	m.uuid = &s
+// SetUID sets the "uid" field.
+func (m *LoginMutation) SetUID(s string) {
+	m.uid = &s
 }
 
-// UUID returns the value of the "uuid" field in the mutation.
-func (m *LoginMutation) UUID() (r string, exists bool) {
-	v := m.uuid
+// UID returns the value of the "uid" field in the mutation.
+func (m *LoginMutation) UID() (r string, exists bool) {
+	v := m.uid
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldUUID returns the old "uuid" field's value of the Login entity.
+// OldUID returns the old "uid" field's value of the Login entity.
 // If the Login object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *LoginMutation) OldUUID(ctx context.Context) (v string, err error) {
+func (m *LoginMutation) OldUID(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUUID is only allowed on UpdateOne operations")
+		return v, errors.New("OldUID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUUID requires an ID field in the mutation")
+		return v, errors.New("OldUID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUUID: %w", err)
+		return v, fmt.Errorf("querying old value for OldUID: %w", err)
 	}
-	return oldValue.UUID, nil
+	return oldValue.UID, nil
 }
 
-// ResetUUID resets all changes to the "uuid" field.
-func (m *LoginMutation) ResetUUID() {
-	m.uuid = nil
+// ResetUID resets all changes to the "uid" field.
+func (m *LoginMutation) ResetUID() {
+	m.uid = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -1484,8 +1484,8 @@ func (m *LoginMutation) Fields() []string {
 	if m.email != nil {
 		fields = append(fields, login.FieldEmail)
 	}
-	if m.uuid != nil {
-		fields = append(fields, login.FieldUUID)
+	if m.uid != nil {
+		fields = append(fields, login.FieldUID)
 	}
 	if m.created_at != nil {
 		fields = append(fields, login.FieldCreatedAt)
@@ -1505,8 +1505,8 @@ func (m *LoginMutation) Field(name string) (ent.Value, bool) {
 		return m.Username()
 	case login.FieldEmail:
 		return m.Email()
-	case login.FieldUUID:
-		return m.UUID()
+	case login.FieldUID:
+		return m.UID()
 	case login.FieldCreatedAt:
 		return m.CreatedAt()
 	case login.FieldStatus:
@@ -1524,8 +1524,8 @@ func (m *LoginMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldUsername(ctx)
 	case login.FieldEmail:
 		return m.OldEmail(ctx)
-	case login.FieldUUID:
-		return m.OldUUID(ctx)
+	case login.FieldUID:
+		return m.OldUID(ctx)
 	case login.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case login.FieldStatus:
@@ -1553,12 +1553,12 @@ func (m *LoginMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetEmail(v)
 		return nil
-	case login.FieldUUID:
+	case login.FieldUID:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetUUID(v)
+		m.SetUID(v)
 		return nil
 	case login.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -1629,8 +1629,8 @@ func (m *LoginMutation) ResetField(name string) error {
 	case login.FieldEmail:
 		m.ResetEmail()
 		return nil
-	case login.FieldUUID:
-		m.ResetUUID()
+	case login.FieldUID:
+		m.ResetUID()
 		return nil
 	case login.FieldCreatedAt:
 		m.ResetCreatedAt()
