@@ -25,6 +25,8 @@ type Login struct {
 	UUID string `json:"uuid,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	// Status holds the value of the "status" field.
+	Status login.Status `json:"status,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the LoginQuery when eager-loading is set.
 	Edges LoginEdges `json:"edges"`
@@ -60,7 +62,7 @@ func (*Login) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case login.FieldID:
 			values[i] = new(sql.NullInt64)
-		case login.FieldUsername, login.FieldEmail, login.FieldUUID:
+		case login.FieldUsername, login.FieldEmail, login.FieldUUID, login.FieldStatus:
 			values[i] = new(sql.NullString)
 		case login.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -109,6 +111,12 @@ func (l *Login) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				l.CreatedAt = value.Time
 			}
+		case login.FieldStatus:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field status", values[i])
+			} else if value.Valid {
+				l.Status = login.Status(value.String)
+			}
 		}
 	}
 	return nil
@@ -153,6 +161,9 @@ func (l *Login) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(l.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("status=")
+	builder.WriteString(fmt.Sprintf("%v", l.Status))
 	builder.WriteByte(')')
 	return builder.String()
 }

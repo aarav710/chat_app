@@ -61,6 +61,12 @@ func (lu *LoginUpdate) SetNillableCreatedAt(t *time.Time) *LoginUpdate {
 	return lu
 }
 
+// SetStatus sets the "status" field.
+func (lu *LoginUpdate) SetStatus(l login.Status) *LoginUpdate {
+	lu.mutation.SetStatus(l)
+	return lu
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (lu *LoginUpdate) SetUserID(id int) *LoginUpdate {
 	lu.mutation.SetUserID(id)
@@ -98,12 +104,18 @@ func (lu *LoginUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(lu.hooks) == 0 {
+		if err = lu.check(); err != nil {
+			return 0, err
+		}
 		affected, err = lu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*LoginMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = lu.check(); err != nil {
+				return 0, err
 			}
 			lu.mutation = mutation
 			affected, err = lu.sqlSave(ctx)
@@ -143,6 +155,16 @@ func (lu *LoginUpdate) ExecX(ctx context.Context) {
 	if err := lu.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// check runs all checks and user-defined validators on the builder.
+func (lu *LoginUpdate) check() error {
+	if v, ok := lu.mutation.Status(); ok {
+		if err := login.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Login.status": %w`, err)}
+		}
+	}
+	return nil
 }
 
 func (lu *LoginUpdate) sqlSave(ctx context.Context) (n int, err error) {
@@ -189,6 +211,13 @@ func (lu *LoginUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Type:   field.TypeTime,
 			Value:  value,
 			Column: login.FieldCreatedAt,
+		})
+	}
+	if value, ok := lu.mutation.Status(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeEnum,
+			Value:  value,
+			Column: login.FieldStatus,
 		})
 	}
 	if lu.mutation.UserCleared() {
@@ -277,6 +306,12 @@ func (luo *LoginUpdateOne) SetNillableCreatedAt(t *time.Time) *LoginUpdateOne {
 	return luo
 }
 
+// SetStatus sets the "status" field.
+func (luo *LoginUpdateOne) SetStatus(l login.Status) *LoginUpdateOne {
+	luo.mutation.SetStatus(l)
+	return luo
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (luo *LoginUpdateOne) SetUserID(id int) *LoginUpdateOne {
 	luo.mutation.SetUserID(id)
@@ -321,12 +356,18 @@ func (luo *LoginUpdateOne) Save(ctx context.Context) (*Login, error) {
 		node *Login
 	)
 	if len(luo.hooks) == 0 {
+		if err = luo.check(); err != nil {
+			return nil, err
+		}
 		node, err = luo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*LoginMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = luo.check(); err != nil {
+				return nil, err
 			}
 			luo.mutation = mutation
 			node, err = luo.sqlSave(ctx)
@@ -372,6 +413,16 @@ func (luo *LoginUpdateOne) ExecX(ctx context.Context) {
 	if err := luo.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// check runs all checks and user-defined validators on the builder.
+func (luo *LoginUpdateOne) check() error {
+	if v, ok := luo.mutation.Status(); ok {
+		if err := login.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Login.status": %w`, err)}
+		}
+	}
+	return nil
 }
 
 func (luo *LoginUpdateOne) sqlSave(ctx context.Context) (_node *Login, err error) {
@@ -435,6 +486,13 @@ func (luo *LoginUpdateOne) sqlSave(ctx context.Context) (_node *Login, err error
 			Type:   field.TypeTime,
 			Value:  value,
 			Column: login.FieldCreatedAt,
+		})
+	}
+	if value, ok := luo.mutation.Status(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeEnum,
+			Value:  value,
+			Column: login.FieldStatus,
 		})
 	}
 	if luo.mutation.UserCleared() {

@@ -20,29 +20,23 @@ type User struct {
 	Bio string `json:"bio,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
-	Edges          UserEdges `json:"edges"`
-	login_user     *int
-	user_followers *int
-	user_following *int
+	Edges      UserEdges `json:"edges"`
+	login_user *int
 }
 
 // UserEdges holds the relations/edges for other nodes in the graph.
 type UserEdges struct {
 	// Login holds the value of the login edge.
 	Login *Login `json:"login,omitempty"`
-	// UserFollowers holds the value of the user_followers edge.
-	UserFollowers *User `json:"user_followers,omitempty"`
-	// Followers holds the value of the followers edge.
-	Followers []*User `json:"followers,omitempty"`
-	// UserFollowings holds the value of the user_followings edge.
-	UserFollowings *User `json:"user_followings,omitempty"`
-	// Following holds the value of the following edge.
-	Following []*User `json:"following,omitempty"`
 	// Messages holds the value of the messages edge.
 	Messages []*Message `json:"messages,omitempty"`
+	// Chats holds the value of the chats edge.
+	Chats []*Chat `json:"chats,omitempty"`
+	// RolesInChats holds the value of the roles_in_chats edge.
+	RolesInChats []*ChatRoles `json:"roles_in_chats,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [4]bool
 }
 
 // LoginOrErr returns the Login value or an error if the edge
@@ -59,59 +53,31 @@ func (e UserEdges) LoginOrErr() (*Login, error) {
 	return nil, &NotLoadedError{edge: "login"}
 }
 
-// UserFollowersOrErr returns the UserFollowers value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e UserEdges) UserFollowersOrErr() (*User, error) {
-	if e.loadedTypes[1] {
-		if e.UserFollowers == nil {
-			// The edge user_followers was loaded in eager-loading,
-			// but was not found.
-			return nil, &NotFoundError{label: user.Label}
-		}
-		return e.UserFollowers, nil
-	}
-	return nil, &NotLoadedError{edge: "user_followers"}
-}
-
-// FollowersOrErr returns the Followers value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) FollowersOrErr() ([]*User, error) {
-	if e.loadedTypes[2] {
-		return e.Followers, nil
-	}
-	return nil, &NotLoadedError{edge: "followers"}
-}
-
-// UserFollowingsOrErr returns the UserFollowings value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e UserEdges) UserFollowingsOrErr() (*User, error) {
-	if e.loadedTypes[3] {
-		if e.UserFollowings == nil {
-			// The edge user_followings was loaded in eager-loading,
-			// but was not found.
-			return nil, &NotFoundError{label: user.Label}
-		}
-		return e.UserFollowings, nil
-	}
-	return nil, &NotLoadedError{edge: "user_followings"}
-}
-
-// FollowingOrErr returns the Following value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) FollowingOrErr() ([]*User, error) {
-	if e.loadedTypes[4] {
-		return e.Following, nil
-	}
-	return nil, &NotLoadedError{edge: "following"}
-}
-
 // MessagesOrErr returns the Messages value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) MessagesOrErr() ([]*Message, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[1] {
 		return e.Messages, nil
 	}
 	return nil, &NotLoadedError{edge: "messages"}
+}
+
+// ChatsOrErr returns the Chats value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ChatsOrErr() ([]*Chat, error) {
+	if e.loadedTypes[2] {
+		return e.Chats, nil
+	}
+	return nil, &NotLoadedError{edge: "chats"}
+}
+
+// RolesInChatsOrErr returns the RolesInChats value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) RolesInChatsOrErr() ([]*ChatRoles, error) {
+	if e.loadedTypes[3] {
+		return e.RolesInChats, nil
+	}
+	return nil, &NotLoadedError{edge: "roles_in_chats"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -124,10 +90,6 @@ func (*User) scanValues(columns []string) ([]interface{}, error) {
 		case user.FieldBio:
 			values[i] = new(sql.NullString)
 		case user.ForeignKeys[0]: // login_user
-			values[i] = new(sql.NullInt64)
-		case user.ForeignKeys[1]: // user_followers
-			values[i] = new(sql.NullInt64)
-		case user.ForeignKeys[2]: // user_following
 			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type User", columns[i])
@@ -163,20 +125,6 @@ func (u *User) assignValues(columns []string, values []interface{}) error {
 				u.login_user = new(int)
 				*u.login_user = int(value.Int64)
 			}
-		case user.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field user_followers", value)
-			} else if value.Valid {
-				u.user_followers = new(int)
-				*u.user_followers = int(value.Int64)
-			}
-		case user.ForeignKeys[2]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field user_following", value)
-			} else if value.Valid {
-				u.user_following = new(int)
-				*u.user_following = int(value.Int64)
-			}
 		}
 	}
 	return nil
@@ -187,29 +135,19 @@ func (u *User) QueryLogin() *LoginQuery {
 	return (&UserClient{config: u.config}).QueryLogin(u)
 }
 
-// QueryUserFollowers queries the "user_followers" edge of the User entity.
-func (u *User) QueryUserFollowers() *UserQuery {
-	return (&UserClient{config: u.config}).QueryUserFollowers(u)
-}
-
-// QueryFollowers queries the "followers" edge of the User entity.
-func (u *User) QueryFollowers() *UserQuery {
-	return (&UserClient{config: u.config}).QueryFollowers(u)
-}
-
-// QueryUserFollowings queries the "user_followings" edge of the User entity.
-func (u *User) QueryUserFollowings() *UserQuery {
-	return (&UserClient{config: u.config}).QueryUserFollowings(u)
-}
-
-// QueryFollowing queries the "following" edge of the User entity.
-func (u *User) QueryFollowing() *UserQuery {
-	return (&UserClient{config: u.config}).QueryFollowing(u)
-}
-
 // QueryMessages queries the "messages" edge of the User entity.
 func (u *User) QueryMessages() *MessageQuery {
 	return (&UserClient{config: u.config}).QueryMessages(u)
+}
+
+// QueryChats queries the "chats" edge of the User entity.
+func (u *User) QueryChats() *ChatQuery {
+	return (&UserClient{config: u.config}).QueryChats(u)
+}
+
+// QueryRolesInChats queries the "roles_in_chats" edge of the User entity.
+func (u *User) QueryRolesInChats() *ChatRolesQuery {
+	return (&UserClient{config: u.config}).QueryRolesInChats(u)
 }
 
 // Update returns a builder for updating this User.

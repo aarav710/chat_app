@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"chatapp/backend/ent/chat"
 	"chatapp/backend/ent/login"
 	"chatapp/backend/ent/message"
 	"chatapp/backend/ent/schema"
@@ -13,6 +14,12 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	chatFields := schema.Chat{}.Fields()
+	_ = chatFields
+	// chatDescCreatedAt is the schema descriptor for created_at field.
+	chatDescCreatedAt := chatFields[1].Descriptor()
+	// chat.DefaultCreatedAt holds the default value on creation for the created_at field.
+	chat.DefaultCreatedAt = chatDescCreatedAt.Default.(func() time.Time)
 	loginFields := schema.Login{}.Fields()
 	_ = loginFields
 	// loginDescCreatedAt is the schema descriptor for created_at field.

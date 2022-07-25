@@ -2,19 +2,57 @@
 
 package chat
 
+import (
+	"time"
+)
+
 const (
 	// Label holds the string label denoting the chat type in the database.
 	Label = "chat"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldGroupName holds the string denoting the group_name field in the database.
+	FieldGroupName = "group_name"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldDescription holds the string denoting the description field in the database.
+	FieldDescription = "description"
+	// FieldGroupPhotoURL holds the string denoting the group_photo_url field in the database.
+	FieldGroupPhotoURL = "group_photo_url"
+	// EdgeUsers holds the string denoting the users edge name in mutations.
+	EdgeUsers = "users"
+	// EdgeChatRoles holds the string denoting the chat_roles edge name in mutations.
+	EdgeChatRoles = "chat_roles"
 	// Table holds the table name of the chat in the database.
 	Table = "chats"
+	// UsersTable is the table that holds the users relation/edge. The primary key declared below.
+	UsersTable = "chat_users"
+	// UsersInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	UsersInverseTable = "users"
+	// ChatRolesTable is the table that holds the chat_roles relation/edge.
+	ChatRolesTable = "chat_roles"
+	// ChatRolesInverseTable is the table name for the ChatRoles entity.
+	// It exists in this package in order to avoid circular dependency with the "chatroles" package.
+	ChatRolesInverseTable = "chat_roles"
+	// ChatRolesColumn is the table column denoting the chat_roles relation/edge.
+	ChatRolesColumn = "chat_chat_roles"
 )
 
 // Columns holds all SQL columns for chat fields.
 var Columns = []string{
 	FieldID,
+	FieldGroupName,
+	FieldCreatedAt,
+	FieldDescription,
+	FieldGroupPhotoURL,
 }
+
+var (
+	// UsersPrimaryKey and UsersColumn2 are the table columns denoting the
+	// primary key for the users relation (M2M).
+	UsersPrimaryKey = []string{"chat_id", "user_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -25,3 +63,8 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
+)

@@ -6,15 +6,56 @@ import (
 	"chatapp/backend/ent/chat"
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 )
 
 // Chat is the model entity for the Chat schema.
 type Chat struct {
-	config
+	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// GroupName holds the value of the "group_name" field.
+	GroupName string `json:"group_name,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// Description holds the value of the "description" field.
+	Description string `json:"description,omitempty"`
+	// GroupPhotoURL holds the value of the "group_photo_url" field.
+	GroupPhotoURL string `json:"group_photo_url,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the ChatQuery when eager-loading is set.
+	Edges ChatEdges `json:"edges"`
+}
+
+// ChatEdges holds the relations/edges for other nodes in the graph.
+type ChatEdges struct {
+	// Users holds the value of the users edge.
+	Users []*User `json:"users,omitempty"`
+	// ChatRoles holds the value of the chat_roles edge.
+	ChatRoles []*ChatRoles `json:"chat_roles,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [2]bool
+}
+
+// UsersOrErr returns the Users value or an error if the edge
+// was not loaded in eager-loading.
+func (e ChatEdges) UsersOrErr() ([]*User, error) {
+	if e.loadedTypes[0] {
+		return e.Users, nil
+	}
+	return nil, &NotLoadedError{edge: "users"}
+}
+
+// ChatRolesOrErr returns the ChatRoles value or an error if the edge
+// was not loaded in eager-loading.
+func (e ChatEdges) ChatRolesOrErr() ([]*ChatRoles, error) {
+	if e.loadedTypes[1] {
+		return e.ChatRoles, nil
+	}
+	return nil, &NotLoadedError{edge: "chat_roles"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -24,6 +65,10 @@ func (*Chat) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case chat.FieldID:
 			values[i] = new(sql.NullInt64)
+		case chat.FieldGroupName, chat.FieldDescription, chat.FieldGroupPhotoURL:
+			values[i] = new(sql.NullString)
+		case chat.FieldCreatedAt:
+			values[i] = new(sql.NullTime)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Chat", columns[i])
 		}
@@ -45,9 +90,43 @@ func (c *Chat) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			c.ID = int(value.Int64)
+		case chat.FieldGroupName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field group_name", values[i])
+			} else if value.Valid {
+				c.GroupName = value.String
+			}
+		case chat.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				c.CreatedAt = value.Time
+			}
+		case chat.FieldDescription:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field description", values[i])
+			} else if value.Valid {
+				c.Description = value.String
+			}
+		case chat.FieldGroupPhotoURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field group_photo_url", values[i])
+			} else if value.Valid {
+				c.GroupPhotoURL = value.String
+			}
 		}
 	}
 	return nil
+}
+
+// QueryUsers queries the "users" edge of the Chat entity.
+func (c *Chat) QueryUsers() *UserQuery {
+	return (&ChatClient{config: c.config}).QueryUsers(c)
+}
+
+// QueryChatRoles queries the "chat_roles" edge of the Chat entity.
+func (c *Chat) QueryChatRoles() *ChatRolesQuery {
+	return (&ChatClient{config: c.config}).QueryChatRoles(c)
 }
 
 // Update returns a builder for updating this Chat.
@@ -72,7 +151,18 @@ func (c *Chat) Unwrap() *Chat {
 func (c *Chat) String() string {
 	var builder strings.Builder
 	builder.WriteString("Chat(")
-	builder.WriteString(fmt.Sprintf("id=%v", c.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", c.ID))
+	builder.WriteString("group_name=")
+	builder.WriteString(c.GroupName)
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(c.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("description=")
+	builder.WriteString(c.Description)
+	builder.WriteString(", ")
+	builder.WriteString("group_photo_url=")
+	builder.WriteString(c.GroupPhotoURL)
 	builder.WriteByte(')')
 	return builder.String()
 }

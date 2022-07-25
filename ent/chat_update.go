@@ -4,10 +4,13 @@ package ent
 
 import (
 	"chatapp/backend/ent/chat"
+	"chatapp/backend/ent/chatroles"
 	"chatapp/backend/ent/predicate"
+	"chatapp/backend/ent/user"
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -27,9 +30,113 @@ func (cu *ChatUpdate) Where(ps ...predicate.Chat) *ChatUpdate {
 	return cu
 }
 
+// SetGroupName sets the "group_name" field.
+func (cu *ChatUpdate) SetGroupName(s string) *ChatUpdate {
+	cu.mutation.SetGroupName(s)
+	return cu
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (cu *ChatUpdate) SetCreatedAt(t time.Time) *ChatUpdate {
+	cu.mutation.SetCreatedAt(t)
+	return cu
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (cu *ChatUpdate) SetNillableCreatedAt(t *time.Time) *ChatUpdate {
+	if t != nil {
+		cu.SetCreatedAt(*t)
+	}
+	return cu
+}
+
+// SetDescription sets the "description" field.
+func (cu *ChatUpdate) SetDescription(s string) *ChatUpdate {
+	cu.mutation.SetDescription(s)
+	return cu
+}
+
+// SetGroupPhotoURL sets the "group_photo_url" field.
+func (cu *ChatUpdate) SetGroupPhotoURL(s string) *ChatUpdate {
+	cu.mutation.SetGroupPhotoURL(s)
+	return cu
+}
+
+// AddUserIDs adds the "users" edge to the User entity by IDs.
+func (cu *ChatUpdate) AddUserIDs(ids ...int) *ChatUpdate {
+	cu.mutation.AddUserIDs(ids...)
+	return cu
+}
+
+// AddUsers adds the "users" edges to the User entity.
+func (cu *ChatUpdate) AddUsers(u ...*User) *ChatUpdate {
+	ids := make([]int, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return cu.AddUserIDs(ids...)
+}
+
+// AddChatRoleIDs adds the "chat_roles" edge to the ChatRoles entity by IDs.
+func (cu *ChatUpdate) AddChatRoleIDs(ids ...int) *ChatUpdate {
+	cu.mutation.AddChatRoleIDs(ids...)
+	return cu
+}
+
+// AddChatRoles adds the "chat_roles" edges to the ChatRoles entity.
+func (cu *ChatUpdate) AddChatRoles(c ...*ChatRoles) *ChatUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return cu.AddChatRoleIDs(ids...)
+}
+
 // Mutation returns the ChatMutation object of the builder.
 func (cu *ChatUpdate) Mutation() *ChatMutation {
 	return cu.mutation
+}
+
+// ClearUsers clears all "users" edges to the User entity.
+func (cu *ChatUpdate) ClearUsers() *ChatUpdate {
+	cu.mutation.ClearUsers()
+	return cu
+}
+
+// RemoveUserIDs removes the "users" edge to User entities by IDs.
+func (cu *ChatUpdate) RemoveUserIDs(ids ...int) *ChatUpdate {
+	cu.mutation.RemoveUserIDs(ids...)
+	return cu
+}
+
+// RemoveUsers removes "users" edges to User entities.
+func (cu *ChatUpdate) RemoveUsers(u ...*User) *ChatUpdate {
+	ids := make([]int, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return cu.RemoveUserIDs(ids...)
+}
+
+// ClearChatRoles clears all "chat_roles" edges to the ChatRoles entity.
+func (cu *ChatUpdate) ClearChatRoles() *ChatUpdate {
+	cu.mutation.ClearChatRoles()
+	return cu
+}
+
+// RemoveChatRoleIDs removes the "chat_roles" edge to ChatRoles entities by IDs.
+func (cu *ChatUpdate) RemoveChatRoleIDs(ids ...int) *ChatUpdate {
+	cu.mutation.RemoveChatRoleIDs(ids...)
+	return cu
+}
+
+// RemoveChatRoles removes "chat_roles" edges to ChatRoles entities.
+func (cu *ChatUpdate) RemoveChatRoles(c ...*ChatRoles) *ChatUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return cu.RemoveChatRoleIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -104,6 +211,142 @@ func (cu *ChatUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := cu.mutation.GroupName(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: chat.FieldGroupName,
+		})
+	}
+	if value, ok := cu.mutation.CreatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: chat.FieldCreatedAt,
+		})
+	}
+	if value, ok := cu.mutation.Description(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: chat.FieldDescription,
+		})
+	}
+	if value, ok := cu.mutation.GroupPhotoURL(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: chat.FieldGroupPhotoURL,
+		})
+	}
+	if cu.mutation.UsersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   chat.UsersTable,
+			Columns: chat.UsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.RemovedUsersIDs(); len(nodes) > 0 && !cu.mutation.UsersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   chat.UsersTable,
+			Columns: chat.UsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.UsersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   chat.UsersTable,
+			Columns: chat.UsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cu.mutation.ChatRolesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   chat.ChatRolesTable,
+			Columns: []string{chat.ChatRolesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chatroles.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.RemovedChatRolesIDs(); len(nodes) > 0 && !cu.mutation.ChatRolesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   chat.ChatRolesTable,
+			Columns: []string{chat.ChatRolesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chatroles.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.ChatRolesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   chat.ChatRolesTable,
+			Columns: []string{chat.ChatRolesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chatroles.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, cu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{chat.Label}
@@ -123,9 +366,113 @@ type ChatUpdateOne struct {
 	mutation *ChatMutation
 }
 
+// SetGroupName sets the "group_name" field.
+func (cuo *ChatUpdateOne) SetGroupName(s string) *ChatUpdateOne {
+	cuo.mutation.SetGroupName(s)
+	return cuo
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (cuo *ChatUpdateOne) SetCreatedAt(t time.Time) *ChatUpdateOne {
+	cuo.mutation.SetCreatedAt(t)
+	return cuo
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (cuo *ChatUpdateOne) SetNillableCreatedAt(t *time.Time) *ChatUpdateOne {
+	if t != nil {
+		cuo.SetCreatedAt(*t)
+	}
+	return cuo
+}
+
+// SetDescription sets the "description" field.
+func (cuo *ChatUpdateOne) SetDescription(s string) *ChatUpdateOne {
+	cuo.mutation.SetDescription(s)
+	return cuo
+}
+
+// SetGroupPhotoURL sets the "group_photo_url" field.
+func (cuo *ChatUpdateOne) SetGroupPhotoURL(s string) *ChatUpdateOne {
+	cuo.mutation.SetGroupPhotoURL(s)
+	return cuo
+}
+
+// AddUserIDs adds the "users" edge to the User entity by IDs.
+func (cuo *ChatUpdateOne) AddUserIDs(ids ...int) *ChatUpdateOne {
+	cuo.mutation.AddUserIDs(ids...)
+	return cuo
+}
+
+// AddUsers adds the "users" edges to the User entity.
+func (cuo *ChatUpdateOne) AddUsers(u ...*User) *ChatUpdateOne {
+	ids := make([]int, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return cuo.AddUserIDs(ids...)
+}
+
+// AddChatRoleIDs adds the "chat_roles" edge to the ChatRoles entity by IDs.
+func (cuo *ChatUpdateOne) AddChatRoleIDs(ids ...int) *ChatUpdateOne {
+	cuo.mutation.AddChatRoleIDs(ids...)
+	return cuo
+}
+
+// AddChatRoles adds the "chat_roles" edges to the ChatRoles entity.
+func (cuo *ChatUpdateOne) AddChatRoles(c ...*ChatRoles) *ChatUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return cuo.AddChatRoleIDs(ids...)
+}
+
 // Mutation returns the ChatMutation object of the builder.
 func (cuo *ChatUpdateOne) Mutation() *ChatMutation {
 	return cuo.mutation
+}
+
+// ClearUsers clears all "users" edges to the User entity.
+func (cuo *ChatUpdateOne) ClearUsers() *ChatUpdateOne {
+	cuo.mutation.ClearUsers()
+	return cuo
+}
+
+// RemoveUserIDs removes the "users" edge to User entities by IDs.
+func (cuo *ChatUpdateOne) RemoveUserIDs(ids ...int) *ChatUpdateOne {
+	cuo.mutation.RemoveUserIDs(ids...)
+	return cuo
+}
+
+// RemoveUsers removes "users" edges to User entities.
+func (cuo *ChatUpdateOne) RemoveUsers(u ...*User) *ChatUpdateOne {
+	ids := make([]int, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return cuo.RemoveUserIDs(ids...)
+}
+
+// ClearChatRoles clears all "chat_roles" edges to the ChatRoles entity.
+func (cuo *ChatUpdateOne) ClearChatRoles() *ChatUpdateOne {
+	cuo.mutation.ClearChatRoles()
+	return cuo
+}
+
+// RemoveChatRoleIDs removes the "chat_roles" edge to ChatRoles entities by IDs.
+func (cuo *ChatUpdateOne) RemoveChatRoleIDs(ids ...int) *ChatUpdateOne {
+	cuo.mutation.RemoveChatRoleIDs(ids...)
+	return cuo
+}
+
+// RemoveChatRoles removes "chat_roles" edges to ChatRoles entities.
+func (cuo *ChatUpdateOne) RemoveChatRoles(c ...*ChatRoles) *ChatUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return cuo.RemoveChatRoleIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -229,6 +576,142 @@ func (cuo *ChatUpdateOne) sqlSave(ctx context.Context) (_node *Chat, err error) 
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := cuo.mutation.GroupName(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: chat.FieldGroupName,
+		})
+	}
+	if value, ok := cuo.mutation.CreatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: chat.FieldCreatedAt,
+		})
+	}
+	if value, ok := cuo.mutation.Description(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: chat.FieldDescription,
+		})
+	}
+	if value, ok := cuo.mutation.GroupPhotoURL(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: chat.FieldGroupPhotoURL,
+		})
+	}
+	if cuo.mutation.UsersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   chat.UsersTable,
+			Columns: chat.UsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.RemovedUsersIDs(); len(nodes) > 0 && !cuo.mutation.UsersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   chat.UsersTable,
+			Columns: chat.UsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.UsersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   chat.UsersTable,
+			Columns: chat.UsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cuo.mutation.ChatRolesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   chat.ChatRolesTable,
+			Columns: []string{chat.ChatRolesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chatroles.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.RemovedChatRolesIDs(); len(nodes) > 0 && !cuo.mutation.ChatRolesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   chat.ChatRolesTable,
+			Columns: []string{chat.ChatRolesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chatroles.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.ChatRolesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   chat.ChatRolesTable,
+			Columns: []string{chat.ChatRolesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chatroles.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Chat{config: cuo.config}
 	_spec.Assign = _node.assignValues

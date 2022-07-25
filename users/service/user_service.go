@@ -7,6 +7,7 @@ import (
 
 type UserService interface {
 	GetUserById(userId int) (*ent.User, error)
+	GetUsersByUsername(username string) ([]*ent.User, error)
 }
 
 type UserServiceImpl struct {
@@ -26,3 +27,10 @@ func (service *UserServiceImpl) GetUserById(userId int) (*ent.User, error) {
 	return user, err
 }
 
+func (service *UserServiceImpl) GetUsersByUsername(username string) ([]*ent.User, error) {
+	users, err := service.userRepo.GetUsersContainingUsername(username)
+	if err != nil {
+		return nil, err
+	}
+	return users, err
+}

@@ -3,6 +3,8 @@
 package ent
 
 import (
+	"chatapp/backend/ent/chat"
+	"chatapp/backend/ent/chatroles"
 	"chatapp/backend/ent/login"
 	"chatapp/backend/ent/message"
 	"chatapp/backend/ent/predicate"
@@ -27,13 +29,11 @@ type UserQuery struct {
 	fields     []string
 	predicates []predicate.User
 	// eager-loading edges.
-	withLogin          *LoginQuery
-	withUserFollowers  *UserQuery
-	withFollowers      *UserQuery
-	withUserFollowings *UserQuery
-	withFollowing      *UserQuery
-	withMessages       *MessageQuery
-	withFKs            bool
+	withLogin        *LoginQuery
+	withMessages     *MessageQuery
+	withChats        *ChatQuery
+	withRolesInChats *ChatRolesQuery
+	withFKs          bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -92,94 +92,6 @@ func (uq *UserQuery) QueryLogin() *LoginQuery {
 	return query
 }
 
-// QueryUserFollowers chains the current query on the "user_followers" edge.
-func (uq *UserQuery) QueryUserFollowers() *UserQuery {
-	query := &UserQuery{config: uq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := uq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := uq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, user.UserFollowersTable, user.UserFollowersColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryFollowers chains the current query on the "followers" edge.
-func (uq *UserQuery) QueryFollowers() *UserQuery {
-	query := &UserQuery{config: uq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := uq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := uq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.FollowersTable, user.FollowersColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryUserFollowings chains the current query on the "user_followings" edge.
-func (uq *UserQuery) QueryUserFollowings() *UserQuery {
-	query := &UserQuery{config: uq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := uq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := uq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, user.UserFollowingsTable, user.UserFollowingsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryFollowing chains the current query on the "following" edge.
-func (uq *UserQuery) QueryFollowing() *UserQuery {
-	query := &UserQuery{config: uq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := uq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := uq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.FollowingTable, user.FollowingColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryMessages chains the current query on the "messages" edge.
 func (uq *UserQuery) QueryMessages() *MessageQuery {
 	query := &MessageQuery{config: uq.config}
@@ -195,6 +107,50 @@ func (uq *UserQuery) QueryMessages() *MessageQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(message.Table, message.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.MessagesTable, user.MessagesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryChats chains the current query on the "chats" edge.
+func (uq *UserQuery) QueryChats() *ChatQuery {
+	query := &ChatQuery{config: uq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(chat.Table, chat.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, user.ChatsTable, user.ChatsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRolesInChats chains the current query on the "roles_in_chats" edge.
+func (uq *UserQuery) QueryRolesInChats() *ChatRolesQuery {
+	query := &ChatRolesQuery{config: uq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(chatroles.Table, chatroles.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.RolesInChatsTable, user.RolesInChatsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -378,17 +334,15 @@ func (uq *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:             uq.config,
-		limit:              uq.limit,
-		offset:             uq.offset,
-		order:              append([]OrderFunc{}, uq.order...),
-		predicates:         append([]predicate.User{}, uq.predicates...),
-		withLogin:          uq.withLogin.Clone(),
-		withUserFollowers:  uq.withUserFollowers.Clone(),
-		withFollowers:      uq.withFollowers.Clone(),
-		withUserFollowings: uq.withUserFollowings.Clone(),
-		withFollowing:      uq.withFollowing.Clone(),
-		withMessages:       uq.withMessages.Clone(),
+		config:           uq.config,
+		limit:            uq.limit,
+		offset:           uq.offset,
+		order:            append([]OrderFunc{}, uq.order...),
+		predicates:       append([]predicate.User{}, uq.predicates...),
+		withLogin:        uq.withLogin.Clone(),
+		withMessages:     uq.withMessages.Clone(),
+		withChats:        uq.withChats.Clone(),
+		withRolesInChats: uq.withRolesInChats.Clone(),
 		// clone intermediate query.
 		sql:    uq.sql.Clone(),
 		path:   uq.path,
@@ -407,50 +361,6 @@ func (uq *UserQuery) WithLogin(opts ...func(*LoginQuery)) *UserQuery {
 	return uq
 }
 
-// WithUserFollowers tells the query-builder to eager-load the nodes that are connected to
-// the "user_followers" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithUserFollowers(opts ...func(*UserQuery)) *UserQuery {
-	query := &UserQuery{config: uq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	uq.withUserFollowers = query
-	return uq
-}
-
-// WithFollowers tells the query-builder to eager-load the nodes that are connected to
-// the "followers" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithFollowers(opts ...func(*UserQuery)) *UserQuery {
-	query := &UserQuery{config: uq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	uq.withFollowers = query
-	return uq
-}
-
-// WithUserFollowings tells the query-builder to eager-load the nodes that are connected to
-// the "user_followings" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithUserFollowings(opts ...func(*UserQuery)) *UserQuery {
-	query := &UserQuery{config: uq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	uq.withUserFollowings = query
-	return uq
-}
-
-// WithFollowing tells the query-builder to eager-load the nodes that are connected to
-// the "following" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithFollowing(opts ...func(*UserQuery)) *UserQuery {
-	query := &UserQuery{config: uq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	uq.withFollowing = query
-	return uq
-}
-
 // WithMessages tells the query-builder to eager-load the nodes that are connected to
 // the "messages" edge. The optional arguments are used to configure the query builder of the edge.
 func (uq *UserQuery) WithMessages(opts ...func(*MessageQuery)) *UserQuery {
@@ -459,6 +369,28 @@ func (uq *UserQuery) WithMessages(opts ...func(*MessageQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withMessages = query
+	return uq
+}
+
+// WithChats tells the query-builder to eager-load the nodes that are connected to
+// the "chats" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithChats(opts ...func(*ChatQuery)) *UserQuery {
+	query := &ChatQuery{config: uq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withChats = query
+	return uq
+}
+
+// WithRolesInChats tells the query-builder to eager-load the nodes that are connected to
+// the "roles_in_chats" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithRolesInChats(opts ...func(*ChatRolesQuery)) *UserQuery {
+	query := &ChatRolesQuery{config: uq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withRolesInChats = query
 	return uq
 }
 
@@ -533,16 +465,14 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		nodes       = []*User{}
 		withFKs     = uq.withFKs
 		_spec       = uq.querySpec()
-		loadedTypes = [6]bool{
+		loadedTypes = [4]bool{
 			uq.withLogin != nil,
-			uq.withUserFollowers != nil,
-			uq.withFollowers != nil,
-			uq.withUserFollowings != nil,
-			uq.withFollowing != nil,
 			uq.withMessages != nil,
+			uq.withChats != nil,
+			uq.withRolesInChats != nil,
 		}
 	)
-	if uq.withLogin != nil || uq.withUserFollowers != nil || uq.withUserFollowings != nil {
+	if uq.withLogin != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -596,122 +526,6 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		}
 	}
 
-	if query := uq.withUserFollowers; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*User)
-		for i := range nodes {
-			if nodes[i].user_followers == nil {
-				continue
-			}
-			fk := *nodes[i].user_followers
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(user.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "user_followers" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.UserFollowers = n
-			}
-		}
-	}
-
-	if query := uq.withFollowers; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*User)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Followers = []*User{}
-		}
-		query.withFKs = true
-		query.Where(predicate.User(func(s *sql.Selector) {
-			s.Where(sql.InValues(user.FollowersColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			fk := n.user_followers
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "user_followers" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "user_followers" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Followers = append(node.Edges.Followers, n)
-		}
-	}
-
-	if query := uq.withUserFollowings; query != nil {
-		ids := make([]int, 0, len(nodes))
-		nodeids := make(map[int][]*User)
-		for i := range nodes {
-			if nodes[i].user_following == nil {
-				continue
-			}
-			fk := *nodes[i].user_following
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
-		}
-		query.Where(user.IDIn(ids...))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "user_following" returned %v`, n.ID)
-			}
-			for i := range nodes {
-				nodes[i].Edges.UserFollowings = n
-			}
-		}
-	}
-
-	if query := uq.withFollowing; query != nil {
-		fks := make([]driver.Value, 0, len(nodes))
-		nodeids := make(map[int]*User)
-		for i := range nodes {
-			fks = append(fks, nodes[i].ID)
-			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Following = []*User{}
-		}
-		query.withFKs = true
-		query.Where(predicate.User(func(s *sql.Selector) {
-			s.Where(sql.InValues(user.FollowingColumn, fks...))
-		}))
-		neighbors, err := query.All(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, n := range neighbors {
-			fk := n.user_following
-			if fk == nil {
-				return nil, fmt.Errorf(`foreign-key "user_following" is nil for node %v`, n.ID)
-			}
-			node, ok := nodeids[*fk]
-			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "user_following" returned %v for node %v`, *fk, n.ID)
-			}
-			node.Edges.Following = append(node.Edges.Following, n)
-		}
-	}
-
 	if query := uq.withMessages; query != nil {
 		fks := make([]driver.Value, 0, len(nodes))
 		nodeids := make(map[int]*User)
@@ -738,6 +552,88 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 				return nil, fmt.Errorf(`unexpected foreign-key "user_messages" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.Messages = append(node.Edges.Messages, n)
+		}
+	}
+
+	if query := uq.withChats; query != nil {
+		edgeids := make([]driver.Value, len(nodes))
+		byid := make(map[int]*User)
+		nids := make(map[int]map[*User]struct{})
+		for i, node := range nodes {
+			edgeids[i] = node.ID
+			byid[node.ID] = node
+			node.Edges.Chats = []*Chat{}
+		}
+		query.Where(func(s *sql.Selector) {
+			joinT := sql.Table(user.ChatsTable)
+			s.Join(joinT).On(s.C(chat.FieldID), joinT.C(user.ChatsPrimaryKey[0]))
+			s.Where(sql.InValues(joinT.C(user.ChatsPrimaryKey[1]), edgeids...))
+			columns := s.SelectedColumns()
+			s.Select(joinT.C(user.ChatsPrimaryKey[1]))
+			s.AppendSelect(columns...)
+			s.SetDistinct(false)
+		})
+		neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]interface{}, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]interface{}{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []interface{}) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*User]struct{}{byid[outValue]: struct{}{}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byid[outValue]] = struct{}{}
+				return nil
+			}
+		})
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected "chats" node returned %v`, n.ID)
+			}
+			for kn := range nodes {
+				kn.Edges.Chats = append(kn.Edges.Chats, n)
+			}
+		}
+	}
+
+	if query := uq.withRolesInChats; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*User)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.RolesInChats = []*ChatRoles{}
+		}
+		query.withFKs = true
+		query.Where(predicate.ChatRoles(func(s *sql.Selector) {
+			s.Where(sql.InValues(user.RolesInChatsColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.user_roles_in_chats
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "user_roles_in_chats" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "user_roles_in_chats" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.RolesInChats = append(node.Edges.RolesInChats, n)
 		}
 	}
 

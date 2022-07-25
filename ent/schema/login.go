@@ -20,6 +20,7 @@ func (Login) Fields() []ent.Field {
 		field.String("email").Unique(),
 		field.String("uuid").Unique(),
 		field.Time("created_at").Default(time.Now),
+		field.Enum("status").Values("USER", "INCOMPLETE_REGISTRATION"),
 	}
 }
 

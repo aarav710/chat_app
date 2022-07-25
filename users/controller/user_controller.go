@@ -1,29 +1,36 @@
 package controller
 
 import (
-	"chatapp/backend/users/service"
 	"chatapp/backend/errors"
+	userMappings "chatapp/backend/users"
+	"chatapp/backend/users/service"
 	"net/http"
 	"strconv"
-	userMappings "chatapp/backend/users"
+
+	"chatapp/backend/auth"
+	authenticationController "chatapp/backend/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
 type UserController interface {
 	GetUserById(c *gin.Context)
-	GetUserByEmailAndUsername(c *gin.Context)
+	GetUsersUsername(c *gin.Context)
+	Me(c *gin.Context)
 }
 
 type UserControllerImpl struct {
 	router *gin.Engine
 	userService service.UserService
+  authenticationController.AuthenticationController
 }
 
-func NewUserController(router *gin.Engine, userService service.UserService) UserController {
-	userController := UserControllerImpl{router: router, userService: userService}
-	userController.router.GET("/users/:id", userController.GetUserById)
-	userController.router.GET("/users", userController.GetUserByEmailAndUsername)
+func NewUserController(router *gin.Engine, userService service.UserService, authService auth.AuthService) UserController {
+	authenticationController := authenticationController.NewAuthenticationController(router, authService)
+	userController := UserControllerImpl{router: router, userService: userService, AuthenticationController: authenticationController}
+	userController.router.GET("/users/:id", authenticationController.AuthorizeUser([]string{auth.ROLE_USER}), userController.GetUserById)
+	userController.router.GET("/users", userController.GetUsersUsername)
+	userController.router.GET("/users/me", authenticationController.AuthorizeUser([]string{auth.ROLE_USER}), userController.Me)
 	return &userController
 }
 
@@ -43,8 +50,24 @@ func (controller *UserControllerImpl) GetUserById(c *gin.Context) {
 	c.JSON(http.StatusOK, userResponse)
 }
 
+func (controller *UserControllerImpl) GetUsersUsername(c *gin.Context) {
+  username := c.Query("username") 
+	if username == "" {
+		c.Error(errors.NewIncorrectQueryParameterError("provide a part of the username you would like to search for. an empty string is not valid"))
+		return
+	}
+  users, err := controller.userService.GetUsersByUsername(username)
+	if err != nil {
+		c.Error(err)
+	}
+	var usersResponse []userMappings.UserResponse
+	for _, user := range users {
+    userResponse := userMappings.EntToResponse(user)
+		usersResponse = append(usersResponse, userResponse)
+	}
+	c.JSON(http.StatusOK, usersResponse)
+}
 
-// only one querystring parameter allowed. this does not support having both, email and username, as the querystring param. in the service it will be rejected with a custom invalid input error.
-func (controller *UserControllerImpl) GetUserByEmailAndUsername(c *gin.Context) {
-  
+func (controler *UserControllerImpl) Me(c *gin.Context) {
+
 }

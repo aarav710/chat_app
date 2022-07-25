@@ -4,8 +4,11 @@ package ent
 
 import (
 	"chatapp/backend/ent/chat"
+	"chatapp/backend/ent/chatroles"
 	"chatapp/backend/ent/predicate"
+	"chatapp/backend/ent/user"
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -23,6 +26,9 @@ type ChatQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Chat
+	// eager-loading edges.
+	withUsers     *UserQuery
+	withChatRoles *ChatRolesQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -57,6 +63,50 @@ func (cq *ChatQuery) Unique(unique bool) *ChatQuery {
 func (cq *ChatQuery) Order(o ...OrderFunc) *ChatQuery {
 	cq.order = append(cq.order, o...)
 	return cq
+}
+
+// QueryUsers chains the current query on the "users" edge.
+func (cq *ChatQuery) QueryUsers() *UserQuery {
+	query := &UserQuery{config: cq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := cq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(chat.Table, chat.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, chat.UsersTable, chat.UsersPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryChatRoles chains the current query on the "chat_roles" edge.
+func (cq *ChatQuery) QueryChatRoles() *ChatRolesQuery {
+	query := &ChatRolesQuery{config: cq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := cq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(chat.Table, chat.FieldID, selector),
+			sqlgraph.To(chatroles.Table, chatroles.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, chat.ChatRolesTable, chat.ChatRolesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Chat entity from the query.
@@ -235,11 +285,13 @@ func (cq *ChatQuery) Clone() *ChatQuery {
 		return nil
 	}
 	return &ChatQuery{
-		config:     cq.config,
-		limit:      cq.limit,
-		offset:     cq.offset,
-		order:      append([]OrderFunc{}, cq.order...),
-		predicates: append([]predicate.Chat{}, cq.predicates...),
+		config:        cq.config,
+		limit:         cq.limit,
+		offset:        cq.offset,
+		order:         append([]OrderFunc{}, cq.order...),
+		predicates:    append([]predicate.Chat{}, cq.predicates...),
+		withUsers:     cq.withUsers.Clone(),
+		withChatRoles: cq.withChatRoles.Clone(),
 		// clone intermediate query.
 		sql:    cq.sql.Clone(),
 		path:   cq.path,
@@ -247,8 +299,43 @@ func (cq *ChatQuery) Clone() *ChatQuery {
 	}
 }
 
+// WithUsers tells the query-builder to eager-load the nodes that are connected to
+// the "users" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *ChatQuery) WithUsers(opts ...func(*UserQuery)) *ChatQuery {
+	query := &UserQuery{config: cq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	cq.withUsers = query
+	return cq
+}
+
+// WithChatRoles tells the query-builder to eager-load the nodes that are connected to
+// the "chat_roles" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *ChatQuery) WithChatRoles(opts ...func(*ChatRolesQuery)) *ChatQuery {
+	query := &ChatRolesQuery{config: cq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	cq.withChatRoles = query
+	return cq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
+//
+// Example:
+//
+//	var v []struct {
+//		GroupName string `json:"group_name,omitempty"`
+//		Count int `json:"count,omitempty"`
+//	}
+//
+//	client.Chat.Query().
+//		GroupBy(chat.FieldGroupName).
+//		Aggregate(ent.Count()).
+//		Scan(ctx, &v)
+//
 func (cq *ChatQuery) GroupBy(field string, fields ...string) *ChatGroupBy {
 	grbuild := &ChatGroupBy{config: cq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -265,6 +352,17 @@ func (cq *ChatQuery) GroupBy(field string, fields ...string) *ChatGroupBy {
 
 // Select allows the selection one or more fields/columns for the given query,
 // instead of selecting all fields in the entity.
+//
+// Example:
+//
+//	var v []struct {
+//		GroupName string `json:"group_name,omitempty"`
+//	}
+//
+//	client.Chat.Query().
+//		Select(chat.FieldGroupName).
+//		Scan(ctx, &v)
+//
 func (cq *ChatQuery) Select(fields ...string) *ChatSelect {
 	cq.fields = append(cq.fields, fields...)
 	selbuild := &ChatSelect{ChatQuery: cq}
@@ -291,8 +389,12 @@ func (cq *ChatQuery) prepareQuery(ctx context.Context) error {
 
 func (cq *ChatQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Chat, error) {
 	var (
-		nodes = []*Chat{}
-		_spec = cq.querySpec()
+		nodes       = []*Chat{}
+		_spec       = cq.querySpec()
+		loadedTypes = [2]bool{
+			cq.withUsers != nil,
+			cq.withChatRoles != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		return (*Chat).scanValues(nil, columns)
@@ -300,6 +402,7 @@ func (cq *ChatQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Chat, e
 	_spec.Assign = func(columns []string, values []interface{}) error {
 		node := &Chat{config: cq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -311,6 +414,89 @@ func (cq *ChatQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Chat, e
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+
+	if query := cq.withUsers; query != nil {
+		edgeids := make([]driver.Value, len(nodes))
+		byid := make(map[int]*Chat)
+		nids := make(map[int]map[*Chat]struct{})
+		for i, node := range nodes {
+			edgeids[i] = node.ID
+			byid[node.ID] = node
+			node.Edges.Users = []*User{}
+		}
+		query.Where(func(s *sql.Selector) {
+			joinT := sql.Table(chat.UsersTable)
+			s.Join(joinT).On(s.C(user.FieldID), joinT.C(chat.UsersPrimaryKey[1]))
+			s.Where(sql.InValues(joinT.C(chat.UsersPrimaryKey[0]), edgeids...))
+			columns := s.SelectedColumns()
+			s.Select(joinT.C(chat.UsersPrimaryKey[0]))
+			s.AppendSelect(columns...)
+			s.SetDistinct(false)
+		})
+		neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]interface{}, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]interface{}{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []interface{}) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Chat]struct{}{byid[outValue]: struct{}{}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byid[outValue]] = struct{}{}
+				return nil
+			}
+		})
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected "users" node returned %v`, n.ID)
+			}
+			for kn := range nodes {
+				kn.Edges.Users = append(kn.Edges.Users, n)
+			}
+		}
+	}
+
+	if query := cq.withChatRoles; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Chat)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.ChatRoles = []*ChatRoles{}
+		}
+		query.withFKs = true
+		query.Where(predicate.ChatRoles(func(s *sql.Selector) {
+			s.Where(sql.InValues(chat.ChatRolesColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.chat_chat_roles
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "chat_chat_roles" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "chat_chat_roles" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.ChatRoles = append(node.Edges.ChatRoles, n)
+		}
+	}
+
 	return nodes, nil
 }
 

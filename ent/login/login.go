@@ -3,6 +3,7 @@
 package login
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -19,6 +20,8 @@ const (
 	FieldUUID = "uuid"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// FieldStatus holds the string denoting the status field in the database.
+	FieldStatus = "status"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the login in the database.
@@ -39,6 +42,7 @@ var Columns = []string{
 	FieldEmail,
 	FieldUUID,
 	FieldCreatedAt,
+	FieldStatus,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -55,3 +59,26 @@ var (
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 )
+
+// Status defines the type for the "status" enum field.
+type Status string
+
+// Status values.
+const (
+	StatusUSER                    Status = "USER"
+	StatusINCOMPLETE_REGISTRATION Status = "INCOMPLETE_REGISTRATION"
+)
+
+func (s Status) String() string {
+	return string(s)
+}
+
+// StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
+func StatusValidator(s Status) error {
+	switch s {
+	case StatusUSER, StatusINCOMPLETE_REGISTRATION:
+		return nil
+	default:
+		return fmt.Errorf("login: invalid enum value for status field: %q", s)
+	}
+}

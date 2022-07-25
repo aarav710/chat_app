@@ -3,6 +3,8 @@
 package ent
 
 import (
+	"chatapp/backend/ent/chat"
+	"chatapp/backend/ent/chatroles"
 	"chatapp/backend/ent/login"
 	"chatapp/backend/ent/message"
 	"chatapp/backend/ent/predicate"
@@ -46,74 +48,6 @@ func (uu *UserUpdate) SetLogin(l *Login) *UserUpdate {
 	return uu.SetLoginID(l.ID)
 }
 
-// SetUserFollowersID sets the "user_followers" edge to the User entity by ID.
-func (uu *UserUpdate) SetUserFollowersID(id int) *UserUpdate {
-	uu.mutation.SetUserFollowersID(id)
-	return uu
-}
-
-// SetNillableUserFollowersID sets the "user_followers" edge to the User entity by ID if the given value is not nil.
-func (uu *UserUpdate) SetNillableUserFollowersID(id *int) *UserUpdate {
-	if id != nil {
-		uu = uu.SetUserFollowersID(*id)
-	}
-	return uu
-}
-
-// SetUserFollowers sets the "user_followers" edge to the User entity.
-func (uu *UserUpdate) SetUserFollowers(u *User) *UserUpdate {
-	return uu.SetUserFollowersID(u.ID)
-}
-
-// AddFollowerIDs adds the "followers" edge to the User entity by IDs.
-func (uu *UserUpdate) AddFollowerIDs(ids ...int) *UserUpdate {
-	uu.mutation.AddFollowerIDs(ids...)
-	return uu
-}
-
-// AddFollowers adds the "followers" edges to the User entity.
-func (uu *UserUpdate) AddFollowers(u ...*User) *UserUpdate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return uu.AddFollowerIDs(ids...)
-}
-
-// SetUserFollowingsID sets the "user_followings" edge to the User entity by ID.
-func (uu *UserUpdate) SetUserFollowingsID(id int) *UserUpdate {
-	uu.mutation.SetUserFollowingsID(id)
-	return uu
-}
-
-// SetNillableUserFollowingsID sets the "user_followings" edge to the User entity by ID if the given value is not nil.
-func (uu *UserUpdate) SetNillableUserFollowingsID(id *int) *UserUpdate {
-	if id != nil {
-		uu = uu.SetUserFollowingsID(*id)
-	}
-	return uu
-}
-
-// SetUserFollowings sets the "user_followings" edge to the User entity.
-func (uu *UserUpdate) SetUserFollowings(u *User) *UserUpdate {
-	return uu.SetUserFollowingsID(u.ID)
-}
-
-// AddFollowingIDs adds the "following" edge to the User entity by IDs.
-func (uu *UserUpdate) AddFollowingIDs(ids ...int) *UserUpdate {
-	uu.mutation.AddFollowingIDs(ids...)
-	return uu
-}
-
-// AddFollowing adds the "following" edges to the User entity.
-func (uu *UserUpdate) AddFollowing(u ...*User) *UserUpdate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return uu.AddFollowingIDs(ids...)
-}
-
 // AddMessageIDs adds the "messages" edge to the Message entity by IDs.
 func (uu *UserUpdate) AddMessageIDs(ids ...int) *UserUpdate {
 	uu.mutation.AddMessageIDs(ids...)
@@ -129,6 +63,36 @@ func (uu *UserUpdate) AddMessages(m ...*Message) *UserUpdate {
 	return uu.AddMessageIDs(ids...)
 }
 
+// AddChatIDs adds the "chats" edge to the Chat entity by IDs.
+func (uu *UserUpdate) AddChatIDs(ids ...int) *UserUpdate {
+	uu.mutation.AddChatIDs(ids...)
+	return uu
+}
+
+// AddChats adds the "chats" edges to the Chat entity.
+func (uu *UserUpdate) AddChats(c ...*Chat) *UserUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uu.AddChatIDs(ids...)
+}
+
+// AddRolesInChatIDs adds the "roles_in_chats" edge to the ChatRoles entity by IDs.
+func (uu *UserUpdate) AddRolesInChatIDs(ids ...int) *UserUpdate {
+	uu.mutation.AddRolesInChatIDs(ids...)
+	return uu
+}
+
+// AddRolesInChats adds the "roles_in_chats" edges to the ChatRoles entity.
+func (uu *UserUpdate) AddRolesInChats(c ...*ChatRoles) *UserUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uu.AddRolesInChatIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -138,60 +102,6 @@ func (uu *UserUpdate) Mutation() *UserMutation {
 func (uu *UserUpdate) ClearLogin() *UserUpdate {
 	uu.mutation.ClearLogin()
 	return uu
-}
-
-// ClearUserFollowers clears the "user_followers" edge to the User entity.
-func (uu *UserUpdate) ClearUserFollowers() *UserUpdate {
-	uu.mutation.ClearUserFollowers()
-	return uu
-}
-
-// ClearFollowers clears all "followers" edges to the User entity.
-func (uu *UserUpdate) ClearFollowers() *UserUpdate {
-	uu.mutation.ClearFollowers()
-	return uu
-}
-
-// RemoveFollowerIDs removes the "followers" edge to User entities by IDs.
-func (uu *UserUpdate) RemoveFollowerIDs(ids ...int) *UserUpdate {
-	uu.mutation.RemoveFollowerIDs(ids...)
-	return uu
-}
-
-// RemoveFollowers removes "followers" edges to User entities.
-func (uu *UserUpdate) RemoveFollowers(u ...*User) *UserUpdate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return uu.RemoveFollowerIDs(ids...)
-}
-
-// ClearUserFollowings clears the "user_followings" edge to the User entity.
-func (uu *UserUpdate) ClearUserFollowings() *UserUpdate {
-	uu.mutation.ClearUserFollowings()
-	return uu
-}
-
-// ClearFollowing clears all "following" edges to the User entity.
-func (uu *UserUpdate) ClearFollowing() *UserUpdate {
-	uu.mutation.ClearFollowing()
-	return uu
-}
-
-// RemoveFollowingIDs removes the "following" edge to User entities by IDs.
-func (uu *UserUpdate) RemoveFollowingIDs(ids ...int) *UserUpdate {
-	uu.mutation.RemoveFollowingIDs(ids...)
-	return uu
-}
-
-// RemoveFollowing removes "following" edges to User entities.
-func (uu *UserUpdate) RemoveFollowing(u ...*User) *UserUpdate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return uu.RemoveFollowingIDs(ids...)
 }
 
 // ClearMessages clears all "messages" edges to the Message entity.
@@ -213,6 +123,48 @@ func (uu *UserUpdate) RemoveMessages(m ...*Message) *UserUpdate {
 		ids[i] = m[i].ID
 	}
 	return uu.RemoveMessageIDs(ids...)
+}
+
+// ClearChats clears all "chats" edges to the Chat entity.
+func (uu *UserUpdate) ClearChats() *UserUpdate {
+	uu.mutation.ClearChats()
+	return uu
+}
+
+// RemoveChatIDs removes the "chats" edge to Chat entities by IDs.
+func (uu *UserUpdate) RemoveChatIDs(ids ...int) *UserUpdate {
+	uu.mutation.RemoveChatIDs(ids...)
+	return uu
+}
+
+// RemoveChats removes "chats" edges to Chat entities.
+func (uu *UserUpdate) RemoveChats(c ...*Chat) *UserUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uu.RemoveChatIDs(ids...)
+}
+
+// ClearRolesInChats clears all "roles_in_chats" edges to the ChatRoles entity.
+func (uu *UserUpdate) ClearRolesInChats() *UserUpdate {
+	uu.mutation.ClearRolesInChats()
+	return uu
+}
+
+// RemoveRolesInChatIDs removes the "roles_in_chats" edge to ChatRoles entities by IDs.
+func (uu *UserUpdate) RemoveRolesInChatIDs(ids ...int) *UserUpdate {
+	uu.mutation.RemoveRolesInChatIDs(ids...)
+	return uu
+}
+
+// RemoveRolesInChats removes "roles_in_chats" edges to ChatRoles entities.
+func (uu *UserUpdate) RemoveRolesInChats(c ...*ChatRoles) *UserUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uu.RemoveRolesInChatIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -343,184 +295,6 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if uu.mutation.UserFollowersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   user.UserFollowersTable,
-			Columns: []string{user.UserFollowersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.UserFollowersIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   user.UserFollowersTable,
-			Columns: []string{user.UserFollowersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if uu.mutation.FollowersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.FollowersTable,
-			Columns: []string{user.FollowersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.RemovedFollowersIDs(); len(nodes) > 0 && !uu.mutation.FollowersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.FollowersTable,
-			Columns: []string{user.FollowersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.FollowersIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.FollowersTable,
-			Columns: []string{user.FollowersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if uu.mutation.UserFollowingsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   user.UserFollowingsTable,
-			Columns: []string{user.UserFollowingsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.UserFollowingsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   user.UserFollowingsTable,
-			Columns: []string{user.UserFollowingsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if uu.mutation.FollowingCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.FollowingTable,
-			Columns: []string{user.FollowingColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.RemovedFollowingIDs(); len(nodes) > 0 && !uu.mutation.FollowingCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.FollowingTable,
-			Columns: []string{user.FollowingColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.FollowingIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.FollowingTable,
-			Columns: []string{user.FollowingColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if uu.mutation.MessagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -575,6 +349,114 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.ChatsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ChatsTable,
+			Columns: user.ChatsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chat.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedChatsIDs(); len(nodes) > 0 && !uu.mutation.ChatsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ChatsTable,
+			Columns: user.ChatsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chat.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.ChatsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ChatsTable,
+			Columns: user.ChatsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chat.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uu.mutation.RolesInChatsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.RolesInChatsTable,
+			Columns: []string{user.RolesInChatsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chatroles.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedRolesInChatsIDs(); len(nodes) > 0 && !uu.mutation.RolesInChatsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.RolesInChatsTable,
+			Columns: []string{user.RolesInChatsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chatroles.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RolesInChatsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.RolesInChatsTable,
+			Columns: []string{user.RolesInChatsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chatroles.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -611,74 +493,6 @@ func (uuo *UserUpdateOne) SetLogin(l *Login) *UserUpdateOne {
 	return uuo.SetLoginID(l.ID)
 }
 
-// SetUserFollowersID sets the "user_followers" edge to the User entity by ID.
-func (uuo *UserUpdateOne) SetUserFollowersID(id int) *UserUpdateOne {
-	uuo.mutation.SetUserFollowersID(id)
-	return uuo
-}
-
-// SetNillableUserFollowersID sets the "user_followers" edge to the User entity by ID if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableUserFollowersID(id *int) *UserUpdateOne {
-	if id != nil {
-		uuo = uuo.SetUserFollowersID(*id)
-	}
-	return uuo
-}
-
-// SetUserFollowers sets the "user_followers" edge to the User entity.
-func (uuo *UserUpdateOne) SetUserFollowers(u *User) *UserUpdateOne {
-	return uuo.SetUserFollowersID(u.ID)
-}
-
-// AddFollowerIDs adds the "followers" edge to the User entity by IDs.
-func (uuo *UserUpdateOne) AddFollowerIDs(ids ...int) *UserUpdateOne {
-	uuo.mutation.AddFollowerIDs(ids...)
-	return uuo
-}
-
-// AddFollowers adds the "followers" edges to the User entity.
-func (uuo *UserUpdateOne) AddFollowers(u ...*User) *UserUpdateOne {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return uuo.AddFollowerIDs(ids...)
-}
-
-// SetUserFollowingsID sets the "user_followings" edge to the User entity by ID.
-func (uuo *UserUpdateOne) SetUserFollowingsID(id int) *UserUpdateOne {
-	uuo.mutation.SetUserFollowingsID(id)
-	return uuo
-}
-
-// SetNillableUserFollowingsID sets the "user_followings" edge to the User entity by ID if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableUserFollowingsID(id *int) *UserUpdateOne {
-	if id != nil {
-		uuo = uuo.SetUserFollowingsID(*id)
-	}
-	return uuo
-}
-
-// SetUserFollowings sets the "user_followings" edge to the User entity.
-func (uuo *UserUpdateOne) SetUserFollowings(u *User) *UserUpdateOne {
-	return uuo.SetUserFollowingsID(u.ID)
-}
-
-// AddFollowingIDs adds the "following" edge to the User entity by IDs.
-func (uuo *UserUpdateOne) AddFollowingIDs(ids ...int) *UserUpdateOne {
-	uuo.mutation.AddFollowingIDs(ids...)
-	return uuo
-}
-
-// AddFollowing adds the "following" edges to the User entity.
-func (uuo *UserUpdateOne) AddFollowing(u ...*User) *UserUpdateOne {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return uuo.AddFollowingIDs(ids...)
-}
-
 // AddMessageIDs adds the "messages" edge to the Message entity by IDs.
 func (uuo *UserUpdateOne) AddMessageIDs(ids ...int) *UserUpdateOne {
 	uuo.mutation.AddMessageIDs(ids...)
@@ -694,6 +508,36 @@ func (uuo *UserUpdateOne) AddMessages(m ...*Message) *UserUpdateOne {
 	return uuo.AddMessageIDs(ids...)
 }
 
+// AddChatIDs adds the "chats" edge to the Chat entity by IDs.
+func (uuo *UserUpdateOne) AddChatIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.AddChatIDs(ids...)
+	return uuo
+}
+
+// AddChats adds the "chats" edges to the Chat entity.
+func (uuo *UserUpdateOne) AddChats(c ...*Chat) *UserUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uuo.AddChatIDs(ids...)
+}
+
+// AddRolesInChatIDs adds the "roles_in_chats" edge to the ChatRoles entity by IDs.
+func (uuo *UserUpdateOne) AddRolesInChatIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.AddRolesInChatIDs(ids...)
+	return uuo
+}
+
+// AddRolesInChats adds the "roles_in_chats" edges to the ChatRoles entity.
+func (uuo *UserUpdateOne) AddRolesInChats(c ...*ChatRoles) *UserUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uuo.AddRolesInChatIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -703,60 +547,6 @@ func (uuo *UserUpdateOne) Mutation() *UserMutation {
 func (uuo *UserUpdateOne) ClearLogin() *UserUpdateOne {
 	uuo.mutation.ClearLogin()
 	return uuo
-}
-
-// ClearUserFollowers clears the "user_followers" edge to the User entity.
-func (uuo *UserUpdateOne) ClearUserFollowers() *UserUpdateOne {
-	uuo.mutation.ClearUserFollowers()
-	return uuo
-}
-
-// ClearFollowers clears all "followers" edges to the User entity.
-func (uuo *UserUpdateOne) ClearFollowers() *UserUpdateOne {
-	uuo.mutation.ClearFollowers()
-	return uuo
-}
-
-// RemoveFollowerIDs removes the "followers" edge to User entities by IDs.
-func (uuo *UserUpdateOne) RemoveFollowerIDs(ids ...int) *UserUpdateOne {
-	uuo.mutation.RemoveFollowerIDs(ids...)
-	return uuo
-}
-
-// RemoveFollowers removes "followers" edges to User entities.
-func (uuo *UserUpdateOne) RemoveFollowers(u ...*User) *UserUpdateOne {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return uuo.RemoveFollowerIDs(ids...)
-}
-
-// ClearUserFollowings clears the "user_followings" edge to the User entity.
-func (uuo *UserUpdateOne) ClearUserFollowings() *UserUpdateOne {
-	uuo.mutation.ClearUserFollowings()
-	return uuo
-}
-
-// ClearFollowing clears all "following" edges to the User entity.
-func (uuo *UserUpdateOne) ClearFollowing() *UserUpdateOne {
-	uuo.mutation.ClearFollowing()
-	return uuo
-}
-
-// RemoveFollowingIDs removes the "following" edge to User entities by IDs.
-func (uuo *UserUpdateOne) RemoveFollowingIDs(ids ...int) *UserUpdateOne {
-	uuo.mutation.RemoveFollowingIDs(ids...)
-	return uuo
-}
-
-// RemoveFollowing removes "following" edges to User entities.
-func (uuo *UserUpdateOne) RemoveFollowing(u ...*User) *UserUpdateOne {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return uuo.RemoveFollowingIDs(ids...)
 }
 
 // ClearMessages clears all "messages" edges to the Message entity.
@@ -778,6 +568,48 @@ func (uuo *UserUpdateOne) RemoveMessages(m ...*Message) *UserUpdateOne {
 		ids[i] = m[i].ID
 	}
 	return uuo.RemoveMessageIDs(ids...)
+}
+
+// ClearChats clears all "chats" edges to the Chat entity.
+func (uuo *UserUpdateOne) ClearChats() *UserUpdateOne {
+	uuo.mutation.ClearChats()
+	return uuo
+}
+
+// RemoveChatIDs removes the "chats" edge to Chat entities by IDs.
+func (uuo *UserUpdateOne) RemoveChatIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.RemoveChatIDs(ids...)
+	return uuo
+}
+
+// RemoveChats removes "chats" edges to Chat entities.
+func (uuo *UserUpdateOne) RemoveChats(c ...*Chat) *UserUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uuo.RemoveChatIDs(ids...)
+}
+
+// ClearRolesInChats clears all "roles_in_chats" edges to the ChatRoles entity.
+func (uuo *UserUpdateOne) ClearRolesInChats() *UserUpdateOne {
+	uuo.mutation.ClearRolesInChats()
+	return uuo
+}
+
+// RemoveRolesInChatIDs removes the "roles_in_chats" edge to ChatRoles entities by IDs.
+func (uuo *UserUpdateOne) RemoveRolesInChatIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.RemoveRolesInChatIDs(ids...)
+	return uuo
+}
+
+// RemoveRolesInChats removes "roles_in_chats" edges to ChatRoles entities.
+func (uuo *UserUpdateOne) RemoveRolesInChats(c ...*ChatRoles) *UserUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uuo.RemoveRolesInChatIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -938,184 +770,6 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if uuo.mutation.UserFollowersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   user.UserFollowersTable,
-			Columns: []string{user.UserFollowersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.UserFollowersIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   user.UserFollowersTable,
-			Columns: []string{user.UserFollowersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if uuo.mutation.FollowersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.FollowersTable,
-			Columns: []string{user.FollowersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.RemovedFollowersIDs(); len(nodes) > 0 && !uuo.mutation.FollowersCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.FollowersTable,
-			Columns: []string{user.FollowersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.FollowersIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.FollowersTable,
-			Columns: []string{user.FollowersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if uuo.mutation.UserFollowingsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   user.UserFollowingsTable,
-			Columns: []string{user.UserFollowingsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.UserFollowingsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   user.UserFollowingsTable,
-			Columns: []string{user.UserFollowingsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if uuo.mutation.FollowingCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.FollowingTable,
-			Columns: []string{user.FollowingColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.RemovedFollowingIDs(); len(nodes) > 0 && !uuo.mutation.FollowingCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.FollowingTable,
-			Columns: []string{user.FollowingColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.FollowingIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.FollowingTable,
-			Columns: []string{user.FollowingColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if uuo.mutation.MessagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1162,6 +816,114 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: message.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.ChatsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ChatsTable,
+			Columns: user.ChatsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chat.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedChatsIDs(); len(nodes) > 0 && !uuo.mutation.ChatsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ChatsTable,
+			Columns: user.ChatsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chat.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.ChatsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ChatsTable,
+			Columns: user.ChatsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chat.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.RolesInChatsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.RolesInChatsTable,
+			Columns: []string{user.RolesInChatsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chatroles.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedRolesInChatsIDs(); len(nodes) > 0 && !uuo.mutation.RolesInChatsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.RolesInChatsTable,
+			Columns: []string{user.RolesInChatsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chatroles.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RolesInChatsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.RolesInChatsTable,
+			Columns: []string{user.RolesInChatsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chatroles.FieldID,
 				},
 			},
 		}

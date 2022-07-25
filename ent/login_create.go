@@ -53,6 +53,12 @@ func (lc *LoginCreate) SetNillableCreatedAt(t *time.Time) *LoginCreate {
 	return lc
 }
 
+// SetStatus sets the "status" field.
+func (lc *LoginCreate) SetStatus(l login.Status) *LoginCreate {
+	lc.mutation.SetStatus(l)
+	return lc
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (lc *LoginCreate) SetUserID(id int) *LoginCreate {
 	lc.mutation.SetUserID(id)
@@ -169,6 +175,14 @@ func (lc *LoginCreate) check() error {
 	if _, ok := lc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Login.created_at"`)}
 	}
+	if _, ok := lc.mutation.Status(); !ok {
+		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Login.status"`)}
+	}
+	if v, ok := lc.mutation.Status(); ok {
+		if err := login.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Login.status": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -227,6 +241,14 @@ func (lc *LoginCreate) createSpec() (*Login, *sqlgraph.CreateSpec) {
 			Column: login.FieldCreatedAt,
 		})
 		_node.CreatedAt = value
+	}
+	if value, ok := lc.mutation.Status(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeEnum,
+			Value:  value,
+			Column: login.FieldStatus,
+		})
+		_node.Status = value
 	}
 	if nodes := lc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

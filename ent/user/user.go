@@ -11,16 +11,12 @@ const (
 	FieldBio = "bio"
 	// EdgeLogin holds the string denoting the login edge name in mutations.
 	EdgeLogin = "login"
-	// EdgeUserFollowers holds the string denoting the user_followers edge name in mutations.
-	EdgeUserFollowers = "user_followers"
-	// EdgeFollowers holds the string denoting the followers edge name in mutations.
-	EdgeFollowers = "followers"
-	// EdgeUserFollowings holds the string denoting the user_followings edge name in mutations.
-	EdgeUserFollowings = "user_followings"
-	// EdgeFollowing holds the string denoting the following edge name in mutations.
-	EdgeFollowing = "following"
 	// EdgeMessages holds the string denoting the messages edge name in mutations.
 	EdgeMessages = "messages"
+	// EdgeChats holds the string denoting the chats edge name in mutations.
+	EdgeChats = "chats"
+	// EdgeRolesInChats holds the string denoting the roles_in_chats edge name in mutations.
+	EdgeRolesInChats = "roles_in_chats"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// LoginTable is the table that holds the login relation/edge.
@@ -30,22 +26,6 @@ const (
 	LoginInverseTable = "logins"
 	// LoginColumn is the table column denoting the login relation/edge.
 	LoginColumn = "login_user"
-	// UserFollowersTable is the table that holds the user_followers relation/edge.
-	UserFollowersTable = "users"
-	// UserFollowersColumn is the table column denoting the user_followers relation/edge.
-	UserFollowersColumn = "user_followers"
-	// FollowersTable is the table that holds the followers relation/edge.
-	FollowersTable = "users"
-	// FollowersColumn is the table column denoting the followers relation/edge.
-	FollowersColumn = "user_followers"
-	// UserFollowingsTable is the table that holds the user_followings relation/edge.
-	UserFollowingsTable = "users"
-	// UserFollowingsColumn is the table column denoting the user_followings relation/edge.
-	UserFollowingsColumn = "user_following"
-	// FollowingTable is the table that holds the following relation/edge.
-	FollowingTable = "users"
-	// FollowingColumn is the table column denoting the following relation/edge.
-	FollowingColumn = "user_following"
 	// MessagesTable is the table that holds the messages relation/edge.
 	MessagesTable = "messages"
 	// MessagesInverseTable is the table name for the Message entity.
@@ -53,6 +33,18 @@ const (
 	MessagesInverseTable = "messages"
 	// MessagesColumn is the table column denoting the messages relation/edge.
 	MessagesColumn = "user_messages"
+	// ChatsTable is the table that holds the chats relation/edge. The primary key declared below.
+	ChatsTable = "chat_users"
+	// ChatsInverseTable is the table name for the Chat entity.
+	// It exists in this package in order to avoid circular dependency with the "chat" package.
+	ChatsInverseTable = "chats"
+	// RolesInChatsTable is the table that holds the roles_in_chats relation/edge.
+	RolesInChatsTable = "chat_roles"
+	// RolesInChatsInverseTable is the table name for the ChatRoles entity.
+	// It exists in this package in order to avoid circular dependency with the "chatroles" package.
+	RolesInChatsInverseTable = "chat_roles"
+	// RolesInChatsColumn is the table column denoting the roles_in_chats relation/edge.
+	RolesInChatsColumn = "user_roles_in_chats"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -65,9 +57,13 @@ var Columns = []string{
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"login_user",
-	"user_followers",
-	"user_following",
 }
+
+var (
+	// ChatsPrimaryKey and ChatsColumn2 are the table columns denoting the
+	// primary key for the chats relation (M2M).
+	ChatsPrimaryKey = []string{"chat_id", "user_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

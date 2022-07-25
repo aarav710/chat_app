@@ -41,3 +41,20 @@ func TestGetUserById(t *testing.T) {
 		}
 	})
 }
+
+func TestGetUsersByUsername(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	defer ctrl.Finish()
+	userRepoMock := mockUserRepo.NewMockUserRepo(ctrl)
+	username := "john"
+	t.Run("users do not exist", func(t *testing.T) {
+		var result []*ent.User 
+		userRepoMock.EXPECT().GetUsersContainingUsername(username).Return(result, nil)
+		userService := NewUserService(userRepoMock)
+		users, err := userService.GetUsersByUsername(username)
+		if !reflect.DeepEqual(users, result) || err != nil {
+			t.Errorf("Incorrect response from user service")
+		}
+	})
+}

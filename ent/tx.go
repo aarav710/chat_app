@@ -14,12 +14,12 @@ type Tx struct {
 	config
 	// Chat is the client for interacting with the Chat builders.
 	Chat *ChatClient
+	// ChatRoles is the client for interacting with the ChatRoles builders.
+	ChatRoles *ChatRolesClient
 	// Login is the client for interacting with the Login builders.
 	Login *LoginClient
 	// Message is the client for interacting with the Message builders.
 	Message *MessageClient
-	// Role is the client for interacting with the Role builders.
-	Role *RoleClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -158,9 +158,9 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Chat = NewChatClient(tx.config)
+	tx.ChatRoles = NewChatRolesClient(tx.config)
 	tx.Login = NewLoginClient(tx.config)
 	tx.Message = NewMessageClient(tx.config)
-	tx.Role = NewRoleClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 

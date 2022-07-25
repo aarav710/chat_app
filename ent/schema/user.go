@@ -22,8 +22,8 @@ func (User) Fields() []ent.Field {
 func (User) Edges() []ent.Edge {
 	return []ent.Edge {
 		edge.From("login", Login.Type).Ref("user").Unique().Required(),
-	  edge.To("followers", User.Type).From("user_followers").Unique(),
-		edge.To("following", User.Type).From("user_followings").Unique(),
     edge.To("messages", Message.Type),
+		edge.From("chats", Chat.Type).Ref("users"),
+		edge.To("roles_in_chats", ChatRoles.Type),
 	}
 }

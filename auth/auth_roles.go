@@ -1,0 +1,4 @@
+package auth
+
+const ROLE_USER string = "ROLE_USER"
+const ROLE_INCOMPLETE_REGISTRATION string = "ROLE_INCOMPLETE_REGISTRATION"

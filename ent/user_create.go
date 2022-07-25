@@ -3,6 +3,8 @@
 package ent
 
 import (
+	"chatapp/backend/ent/chat"
+	"chatapp/backend/ent/chatroles"
 	"chatapp/backend/ent/login"
 	"chatapp/backend/ent/message"
 	"chatapp/backend/ent/user"
@@ -38,74 +40,6 @@ func (uc *UserCreate) SetLogin(l *Login) *UserCreate {
 	return uc.SetLoginID(l.ID)
 }
 
-// SetUserFollowersID sets the "user_followers" edge to the User entity by ID.
-func (uc *UserCreate) SetUserFollowersID(id int) *UserCreate {
-	uc.mutation.SetUserFollowersID(id)
-	return uc
-}
-
-// SetNillableUserFollowersID sets the "user_followers" edge to the User entity by ID if the given value is not nil.
-func (uc *UserCreate) SetNillableUserFollowersID(id *int) *UserCreate {
-	if id != nil {
-		uc = uc.SetUserFollowersID(*id)
-	}
-	return uc
-}
-
-// SetUserFollowers sets the "user_followers" edge to the User entity.
-func (uc *UserCreate) SetUserFollowers(u *User) *UserCreate {
-	return uc.SetUserFollowersID(u.ID)
-}
-
-// AddFollowerIDs adds the "followers" edge to the User entity by IDs.
-func (uc *UserCreate) AddFollowerIDs(ids ...int) *UserCreate {
-	uc.mutation.AddFollowerIDs(ids...)
-	return uc
-}
-
-// AddFollowers adds the "followers" edges to the User entity.
-func (uc *UserCreate) AddFollowers(u ...*User) *UserCreate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return uc.AddFollowerIDs(ids...)
-}
-
-// SetUserFollowingsID sets the "user_followings" edge to the User entity by ID.
-func (uc *UserCreate) SetUserFollowingsID(id int) *UserCreate {
-	uc.mutation.SetUserFollowingsID(id)
-	return uc
-}
-
-// SetNillableUserFollowingsID sets the "user_followings" edge to the User entity by ID if the given value is not nil.
-func (uc *UserCreate) SetNillableUserFollowingsID(id *int) *UserCreate {
-	if id != nil {
-		uc = uc.SetUserFollowingsID(*id)
-	}
-	return uc
-}
-
-// SetUserFollowings sets the "user_followings" edge to the User entity.
-func (uc *UserCreate) SetUserFollowings(u *User) *UserCreate {
-	return uc.SetUserFollowingsID(u.ID)
-}
-
-// AddFollowingIDs adds the "following" edge to the User entity by IDs.
-func (uc *UserCreate) AddFollowingIDs(ids ...int) *UserCreate {
-	uc.mutation.AddFollowingIDs(ids...)
-	return uc
-}
-
-// AddFollowing adds the "following" edges to the User entity.
-func (uc *UserCreate) AddFollowing(u ...*User) *UserCreate {
-	ids := make([]int, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return uc.AddFollowingIDs(ids...)
-}
-
 // AddMessageIDs adds the "messages" edge to the Message entity by IDs.
 func (uc *UserCreate) AddMessageIDs(ids ...int) *UserCreate {
 	uc.mutation.AddMessageIDs(ids...)
@@ -119,6 +53,36 @@ func (uc *UserCreate) AddMessages(m ...*Message) *UserCreate {
 		ids[i] = m[i].ID
 	}
 	return uc.AddMessageIDs(ids...)
+}
+
+// AddChatIDs adds the "chats" edge to the Chat entity by IDs.
+func (uc *UserCreate) AddChatIDs(ids ...int) *UserCreate {
+	uc.mutation.AddChatIDs(ids...)
+	return uc
+}
+
+// AddChats adds the "chats" edges to the Chat entity.
+func (uc *UserCreate) AddChats(c ...*Chat) *UserCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uc.AddChatIDs(ids...)
+}
+
+// AddRolesInChatIDs adds the "roles_in_chats" edge to the ChatRoles entity by IDs.
+func (uc *UserCreate) AddRolesInChatIDs(ids ...int) *UserCreate {
+	uc.mutation.AddRolesInChatIDs(ids...)
+	return uc
+}
+
+// AddRolesInChats adds the "roles_in_chats" edges to the ChatRoles entity.
+func (uc *UserCreate) AddRolesInChats(c ...*ChatRoles) *UserCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uc.AddRolesInChatIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -258,84 +222,6 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_node.login_user = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := uc.mutation.UserFollowersIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   user.UserFollowersTable,
-			Columns: []string{user.UserFollowersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.user_followers = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := uc.mutation.FollowersIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.FollowersTable,
-			Columns: []string{user.FollowersColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := uc.mutation.UserFollowingsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   user.UserFollowingsTable,
-			Columns: []string{user.UserFollowingsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.user_following = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := uc.mutation.FollowingIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.FollowingTable,
-			Columns: []string{user.FollowingColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := uc.mutation.MessagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -347,6 +233,44 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: message.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.ChatsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   user.ChatsTable,
+			Columns: user.ChatsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chat.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.RolesInChatsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.RolesInChatsTable,
+			Columns: []string{user.RolesInChatsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chatroles.FieldID,
 				},
 			},
 		}

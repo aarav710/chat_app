@@ -4,9 +4,9 @@ package ent
 
 import (
 	"chatapp/backend/ent/chat"
+	"chatapp/backend/ent/chatroles"
 	"chatapp/backend/ent/login"
 	"chatapp/backend/ent/message"
-	"chatapp/backend/ent/role"
 	"chatapp/backend/ent/user"
 	"context"
 	"errors"
@@ -35,11 +35,11 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
-		chat.Table:    chat.ValidColumn,
-		login.Table:   login.ValidColumn,
-		message.Table: message.ValidColumn,
-		role.Table:    role.ValidColumn,
-		user.Table:    user.ValidColumn,
+		chat.Table:      chat.ValidColumn,
+		chatroles.Table: chatroles.ValidColumn,
+		login.Table:     login.ValidColumn,
+		message.Table:   message.ValidColumn,
+		user.Table:      user.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {

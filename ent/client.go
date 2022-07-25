@@ -10,9 +10,9 @@ import (
 	"chatapp/backend/ent/migrate"
 
 	"chatapp/backend/ent/chat"
+	"chatapp/backend/ent/chatroles"
 	"chatapp/backend/ent/login"
 	"chatapp/backend/ent/message"
-	"chatapp/backend/ent/role"
 	"chatapp/backend/ent/user"
 
 	"entgo.io/ent/dialect"
@@ -27,12 +27,12 @@ type Client struct {
 	Schema *migrate.Schema
 	// Chat is the client for interacting with the Chat builders.
 	Chat *ChatClient
+	// ChatRoles is the client for interacting with the ChatRoles builders.
+	ChatRoles *ChatRolesClient
 	// Login is the client for interacting with the Login builders.
 	Login *LoginClient
 	// Message is the client for interacting with the Message builders.
 	Message *MessageClient
-	// Role is the client for interacting with the Role builders.
-	Role *RoleClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -49,9 +49,9 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Chat = NewChatClient(c.config)
+	c.ChatRoles = NewChatRolesClient(c.config)
 	c.Login = NewLoginClient(c.config)
 	c.Message = NewMessageClient(c.config)
-	c.Role = NewRoleClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -84,13 +84,13 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:     ctx,
-		config:  cfg,
-		Chat:    NewChatClient(cfg),
-		Login:   NewLoginClient(cfg),
-		Message: NewMessageClient(cfg),
-		Role:    NewRoleClient(cfg),
-		User:    NewUserClient(cfg),
+		ctx:       ctx,
+		config:    cfg,
+		Chat:      NewChatClient(cfg),
+		ChatRoles: NewChatRolesClient(cfg),
+		Login:     NewLoginClient(cfg),
+		Message:   NewMessageClient(cfg),
+		User:      NewUserClient(cfg),
 	}, nil
 }
 
@@ -108,13 +108,13 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:     ctx,
-		config:  cfg,
-		Chat:    NewChatClient(cfg),
-		Login:   NewLoginClient(cfg),
-		Message: NewMessageClient(cfg),
-		Role:    NewRoleClient(cfg),
-		User:    NewUserClient(cfg),
+		ctx:       ctx,
+		config:    cfg,
+		Chat:      NewChatClient(cfg),
+		ChatRoles: NewChatRolesClient(cfg),
+		Login:     NewLoginClient(cfg),
+		Message:   NewMessageClient(cfg),
+		User:      NewUserClient(cfg),
 	}, nil
 }
 
@@ -145,9 +145,9 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.Chat.Use(hooks...)
+	c.ChatRoles.Use(hooks...)
 	c.Login.Use(hooks...)
 	c.Message.Use(hooks...)
-	c.Role.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
@@ -236,9 +236,163 @@ func (c *ChatClient) GetX(ctx context.Context, id int) *Chat {
 	return obj
 }
 
+// QueryUsers queries the users edge of a Chat.
+func (c *ChatClient) QueryUsers(ch *Chat) *UserQuery {
+	query := &UserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ch.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(chat.Table, chat.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, chat.UsersTable, chat.UsersPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ch.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryChatRoles queries the chat_roles edge of a Chat.
+func (c *ChatClient) QueryChatRoles(ch *Chat) *ChatRolesQuery {
+	query := &ChatRolesQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ch.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(chat.Table, chat.FieldID, id),
+			sqlgraph.To(chatroles.Table, chatroles.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, chat.ChatRolesTable, chat.ChatRolesColumn),
+		)
+		fromV = sqlgraph.Neighbors(ch.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ChatClient) Hooks() []Hook {
 	return c.hooks.Chat
+}
+
+// ChatRolesClient is a client for the ChatRoles schema.
+type ChatRolesClient struct {
+	config
+}
+
+// NewChatRolesClient returns a client for the ChatRoles from the given config.
+func NewChatRolesClient(c config) *ChatRolesClient {
+	return &ChatRolesClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `chatroles.Hooks(f(g(h())))`.
+func (c *ChatRolesClient) Use(hooks ...Hook) {
+	c.hooks.ChatRoles = append(c.hooks.ChatRoles, hooks...)
+}
+
+// Create returns a builder for creating a ChatRoles entity.
+func (c *ChatRolesClient) Create() *ChatRolesCreate {
+	mutation := newChatRolesMutation(c.config, OpCreate)
+	return &ChatRolesCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ChatRoles entities.
+func (c *ChatRolesClient) CreateBulk(builders ...*ChatRolesCreate) *ChatRolesCreateBulk {
+	return &ChatRolesCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ChatRoles.
+func (c *ChatRolesClient) Update() *ChatRolesUpdate {
+	mutation := newChatRolesMutation(c.config, OpUpdate)
+	return &ChatRolesUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ChatRolesClient) UpdateOne(cr *ChatRoles) *ChatRolesUpdateOne {
+	mutation := newChatRolesMutation(c.config, OpUpdateOne, withChatRoles(cr))
+	return &ChatRolesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ChatRolesClient) UpdateOneID(id int) *ChatRolesUpdateOne {
+	mutation := newChatRolesMutation(c.config, OpUpdateOne, withChatRolesID(id))
+	return &ChatRolesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ChatRoles.
+func (c *ChatRolesClient) Delete() *ChatRolesDelete {
+	mutation := newChatRolesMutation(c.config, OpDelete)
+	return &ChatRolesDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ChatRolesClient) DeleteOne(cr *ChatRoles) *ChatRolesDeleteOne {
+	return c.DeleteOneID(cr.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *ChatRolesClient) DeleteOneID(id int) *ChatRolesDeleteOne {
+	builder := c.Delete().Where(chatroles.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ChatRolesDeleteOne{builder}
+}
+
+// Query returns a query builder for ChatRoles.
+func (c *ChatRolesClient) Query() *ChatRolesQuery {
+	return &ChatRolesQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a ChatRoles entity by its id.
+func (c *ChatRolesClient) Get(ctx context.Context, id int) (*ChatRoles, error) {
+	return c.Query().Where(chatroles.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ChatRolesClient) GetX(ctx context.Context, id int) *ChatRoles {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryChat queries the chat edge of a ChatRoles.
+func (c *ChatRolesClient) QueryChat(cr *ChatRoles) *ChatQuery {
+	query := &ChatQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := cr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(chatroles.Table, chatroles.FieldID, id),
+			sqlgraph.To(chat.Table, chat.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, chatroles.ChatTable, chatroles.ChatColumn),
+		)
+		fromV = sqlgraph.Neighbors(cr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a ChatRoles.
+func (c *ChatRolesClient) QueryUser(cr *ChatRoles) *UserQuery {
+	query := &UserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := cr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(chatroles.Table, chatroles.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, chatroles.UserTable, chatroles.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(cr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ChatRolesClient) Hooks() []Hook {
+	return c.hooks.ChatRoles
 }
 
 // LoginClient is a client for the Login schema.
@@ -453,96 +607,6 @@ func (c *MessageClient) Hooks() []Hook {
 	return c.hooks.Message
 }
 
-// RoleClient is a client for the Role schema.
-type RoleClient struct {
-	config
-}
-
-// NewRoleClient returns a client for the Role from the given config.
-func NewRoleClient(c config) *RoleClient {
-	return &RoleClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `role.Hooks(f(g(h())))`.
-func (c *RoleClient) Use(hooks ...Hook) {
-	c.hooks.Role = append(c.hooks.Role, hooks...)
-}
-
-// Create returns a builder for creating a Role entity.
-func (c *RoleClient) Create() *RoleCreate {
-	mutation := newRoleMutation(c.config, OpCreate)
-	return &RoleCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Role entities.
-func (c *RoleClient) CreateBulk(builders ...*RoleCreate) *RoleCreateBulk {
-	return &RoleCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Role.
-func (c *RoleClient) Update() *RoleUpdate {
-	mutation := newRoleMutation(c.config, OpUpdate)
-	return &RoleUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *RoleClient) UpdateOne(r *Role) *RoleUpdateOne {
-	mutation := newRoleMutation(c.config, OpUpdateOne, withRole(r))
-	return &RoleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *RoleClient) UpdateOneID(id int) *RoleUpdateOne {
-	mutation := newRoleMutation(c.config, OpUpdateOne, withRoleID(id))
-	return &RoleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Role.
-func (c *RoleClient) Delete() *RoleDelete {
-	mutation := newRoleMutation(c.config, OpDelete)
-	return &RoleDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *RoleClient) DeleteOne(r *Role) *RoleDeleteOne {
-	return c.DeleteOneID(r.ID)
-}
-
-// DeleteOne returns a builder for deleting the given entity by its id.
-func (c *RoleClient) DeleteOneID(id int) *RoleDeleteOne {
-	builder := c.Delete().Where(role.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &RoleDeleteOne{builder}
-}
-
-// Query returns a query builder for Role.
-func (c *RoleClient) Query() *RoleQuery {
-	return &RoleQuery{
-		config: c.config,
-	}
-}
-
-// Get returns a Role entity by its id.
-func (c *RoleClient) Get(ctx context.Context, id int) (*Role, error) {
-	return c.Query().Where(role.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *RoleClient) GetX(ctx context.Context, id int) *Role {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// Hooks returns the client hooks.
-func (c *RoleClient) Hooks() []Hook {
-	return c.hooks.Role
-}
-
 // UserClient is a client for the User schema.
 type UserClient struct {
 	config
@@ -644,70 +708,6 @@ func (c *UserClient) QueryLogin(u *User) *LoginQuery {
 	return query
 }
 
-// QueryUserFollowers queries the user_followers edge of a User.
-func (c *UserClient) QueryUserFollowers(u *User) *UserQuery {
-	query := &UserQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, user.UserFollowersTable, user.UserFollowersColumn),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryFollowers queries the followers edge of a User.
-func (c *UserClient) QueryFollowers(u *User) *UserQuery {
-	query := &UserQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.FollowersTable, user.FollowersColumn),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryUserFollowings queries the user_followings edge of a User.
-func (c *UserClient) QueryUserFollowings(u *User) *UserQuery {
-	query := &UserQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, user.UserFollowingsTable, user.UserFollowingsColumn),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryFollowing queries the following edge of a User.
-func (c *UserClient) QueryFollowing(u *User) *UserQuery {
-	query := &UserQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.FollowingTable, user.FollowingColumn),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryMessages queries the messages edge of a User.
 func (c *UserClient) QueryMessages(u *User) *MessageQuery {
 	query := &MessageQuery{config: c.config}
@@ -717,6 +717,38 @@ func (c *UserClient) QueryMessages(u *User) *MessageQuery {
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(message.Table, message.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.MessagesTable, user.MessagesColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryChats queries the chats edge of a User.
+func (c *UserClient) QueryChats(u *User) *ChatQuery {
+	query := &ChatQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(chat.Table, chat.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, user.ChatsTable, user.ChatsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRolesInChats queries the roles_in_chats edge of a User.
+func (c *UserClient) QueryRolesInChats(u *User) *ChatRolesQuery {
+	query := &ChatRolesQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(chatroles.Table, chatroles.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.RolesInChatsTable, user.RolesInChatsColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil
