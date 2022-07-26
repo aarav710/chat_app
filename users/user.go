@@ -12,6 +12,7 @@ type UserBase struct {
 
 type UserResponse struct {
   ID int
+  Username string `json:"username"`
 	UserBase
 }
 

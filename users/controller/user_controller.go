@@ -29,9 +29,9 @@ type UserControllerImpl struct {
 func NewUserController(router *gin.Engine, userService service.UserService, authService auth.AuthService) UserController {
 	authenticationController := authenticationController.NewAuthenticationController(router, authService)
 	userController := UserControllerImpl{router: router, userService: userService, AuthenticationController: authenticationController}
-	userController.router.GET("/users/:id", authenticationController.AuthorizeUser([]string{auth.ROLE_USER}), userController.GetUserById)
+	userController.router.GET("/users/:id", userController.AuthorizeUser([]string{auth.ROLE_USER}), userController.GetUserById)
 	userController.router.GET("/users", userController.GetUsersUsername)
-	userController.router.GET("/users/me", authenticationController.AuthorizeUser([]string{auth.ROLE_USER}), userController.Me)
+	userController.router.GET("/users/me", userController.AuthorizeUser([]string{auth.ROLE_USER}), userController.Me)
 	return &userController
 }
 

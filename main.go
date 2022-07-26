@@ -13,6 +13,10 @@ import (
 	userRepo "chatapp/backend/users/repo"
 	userService "chatapp/backend/users/service"
 
+	loginController "chatapp/backend/login/controller"
+	loginRepo "chatapp/backend/login/repo"
+  loginService "chatapp/backend/login/service"
+
 	firebase "firebase.google.com/go/v4"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/api/option"
@@ -45,12 +49,15 @@ func main() {
 
 	// INITIALIZING REPOS
 	userRepo := userRepo.NewUserRepo(ctx, db)
+	loginRepo := loginRepo.NewUserRepo(ctx, db)
 
 	// INITIALIZING SERVICES
 
 	userService := userService.NewUserService(userRepo)
+	loginService := loginService.NewUserService(loginRepo, authService)
 
 	// INITIALIZING CONTROLLERS
 	userController.NewUserController(router, userService, authService)
+	loginController.NewLoginController(router, loginService)
 	router.Run()
 }
