@@ -124,7 +124,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 //		Chat.
 //		Query().
 //		Count(ctx)
-//
 func (c *Client) Debug() *Client {
 	if c.debug {
 		return c
@@ -261,6 +260,22 @@ func (c *ChatClient) QueryChatRoles(ch *Chat) *ChatRolesQuery {
 			sqlgraph.From(chat.Table, chat.FieldID, id),
 			sqlgraph.To(chatroles.Table, chatroles.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, chat.ChatRolesTable, chat.ChatRolesColumn),
+		)
+		fromV = sqlgraph.Neighbors(ch.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMessages queries the messages edge of a Chat.
+func (c *ChatClient) QueryMessages(ch *Chat) *MessageQuery {
+	query := &MessageQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := ch.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(chat.Table, chat.FieldID, id),
+			sqlgraph.To(message.Table, message.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, chat.MessagesTable, chat.MessagesColumn),
 		)
 		fromV = sqlgraph.Neighbors(ch.driver.Dialect(), step)
 		return fromV, nil
@@ -595,6 +610,22 @@ func (c *MessageClient) QueryUser(m *Message) *UserQuery {
 			sqlgraph.From(message.Table, message.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, message.UserTable, message.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryChat queries the chat edge of a Message.
+func (c *MessageClient) QueryChat(m *Message) *ChatQuery {
+	query := &ChatQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(message.Table, message.FieldID, id),
+			sqlgraph.To(chat.Table, chat.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, message.ChatTable, message.ChatColumn),
 		)
 		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
 		return fromV, nil

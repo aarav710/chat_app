@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"chatapp/backend/ent/chat"
 	"chatapp/backend/ent/message"
 	"chatapp/backend/ent/predicate"
 	"chatapp/backend/ent/user"
@@ -68,6 +69,25 @@ func (mu *MessageUpdate) SetUser(u *User) *MessageUpdate {
 	return mu.SetUserID(u.ID)
 }
 
+// SetChatID sets the "chat" edge to the Chat entity by ID.
+func (mu *MessageUpdate) SetChatID(id int) *MessageUpdate {
+	mu.mutation.SetChatID(id)
+	return mu
+}
+
+// SetNillableChatID sets the "chat" edge to the Chat entity by ID if the given value is not nil.
+func (mu *MessageUpdate) SetNillableChatID(id *int) *MessageUpdate {
+	if id != nil {
+		mu = mu.SetChatID(*id)
+	}
+	return mu
+}
+
+// SetChat sets the "chat" edge to the Chat entity.
+func (mu *MessageUpdate) SetChat(c *Chat) *MessageUpdate {
+	return mu.SetChatID(c.ID)
+}
+
 // Mutation returns the MessageMutation object of the builder.
 func (mu *MessageUpdate) Mutation() *MessageMutation {
 	return mu.mutation
@@ -76,6 +96,12 @@ func (mu *MessageUpdate) Mutation() *MessageMutation {
 // ClearUser clears the "user" edge to the User entity.
 func (mu *MessageUpdate) ClearUser() *MessageUpdate {
 	mu.mutation.ClearUser()
+	return mu
+}
+
+// ClearChat clears the "chat" edge to the Chat entity.
+func (mu *MessageUpdate) ClearChat() *MessageUpdate {
+	mu.mutation.ClearChat()
 	return mu
 }
 
@@ -200,6 +226,41 @@ func (mu *MessageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if mu.mutation.ChatCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   message.ChatTable,
+			Columns: []string{message.ChatColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chat.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mu.mutation.ChatIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   message.ChatTable,
+			Columns: []string{message.ChatColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chat.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, mu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{message.Label}
@@ -258,6 +319,25 @@ func (muo *MessageUpdateOne) SetUser(u *User) *MessageUpdateOne {
 	return muo.SetUserID(u.ID)
 }
 
+// SetChatID sets the "chat" edge to the Chat entity by ID.
+func (muo *MessageUpdateOne) SetChatID(id int) *MessageUpdateOne {
+	muo.mutation.SetChatID(id)
+	return muo
+}
+
+// SetNillableChatID sets the "chat" edge to the Chat entity by ID if the given value is not nil.
+func (muo *MessageUpdateOne) SetNillableChatID(id *int) *MessageUpdateOne {
+	if id != nil {
+		muo = muo.SetChatID(*id)
+	}
+	return muo
+}
+
+// SetChat sets the "chat" edge to the Chat entity.
+func (muo *MessageUpdateOne) SetChat(c *Chat) *MessageUpdateOne {
+	return muo.SetChatID(c.ID)
+}
+
 // Mutation returns the MessageMutation object of the builder.
 func (muo *MessageUpdateOne) Mutation() *MessageMutation {
 	return muo.mutation
@@ -266,6 +346,12 @@ func (muo *MessageUpdateOne) Mutation() *MessageMutation {
 // ClearUser clears the "user" edge to the User entity.
 func (muo *MessageUpdateOne) ClearUser() *MessageUpdateOne {
 	muo.mutation.ClearUser()
+	return muo
+}
+
+// ClearChat clears the "chat" edge to the Chat entity.
+func (muo *MessageUpdateOne) ClearChat() *MessageUpdateOne {
+	muo.mutation.ClearChat()
 	return muo
 }
 
@@ -412,6 +498,41 @@ func (muo *MessageUpdateOne) sqlSave(ctx context.Context) (_node *Message, err e
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if muo.mutation.ChatCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   message.ChatTable,
+			Columns: []string{message.ChatColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chat.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := muo.mutation.ChatIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   message.ChatTable,
+			Columns: []string{message.ChatColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chat.FieldID,
 				},
 			},
 		}

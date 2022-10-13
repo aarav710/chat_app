@@ -87,6 +87,13 @@ func Bio(v string) predicate.User {
 	})
 }
 
+// DisplayPictureURL applies equality check predicate on the "display_picture_url" field. It's identical to DisplayPictureURLEQ.
+func DisplayPictureURL(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldDisplayPictureURL), v))
+	})
+}
+
 // BioEQ applies the EQ predicate on the "bio" field.
 func BioEQ(v string) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
@@ -195,6 +202,117 @@ func BioEqualFold(v string) predicate.User {
 func BioContainsFold(v string) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldBio), v))
+	})
+}
+
+// DisplayPictureURLEQ applies the EQ predicate on the "display_picture_url" field.
+func DisplayPictureURLEQ(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldDisplayPictureURL), v))
+	})
+}
+
+// DisplayPictureURLNEQ applies the NEQ predicate on the "display_picture_url" field.
+func DisplayPictureURLNEQ(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldDisplayPictureURL), v))
+	})
+}
+
+// DisplayPictureURLIn applies the In predicate on the "display_picture_url" field.
+func DisplayPictureURLIn(vs ...string) predicate.User {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldDisplayPictureURL), v...))
+	})
+}
+
+// DisplayPictureURLNotIn applies the NotIn predicate on the "display_picture_url" field.
+func DisplayPictureURLNotIn(vs ...string) predicate.User {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldDisplayPictureURL), v...))
+	})
+}
+
+// DisplayPictureURLGT applies the GT predicate on the "display_picture_url" field.
+func DisplayPictureURLGT(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldDisplayPictureURL), v))
+	})
+}
+
+// DisplayPictureURLGTE applies the GTE predicate on the "display_picture_url" field.
+func DisplayPictureURLGTE(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldDisplayPictureURL), v))
+	})
+}
+
+// DisplayPictureURLLT applies the LT predicate on the "display_picture_url" field.
+func DisplayPictureURLLT(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldDisplayPictureURL), v))
+	})
+}
+
+// DisplayPictureURLLTE applies the LTE predicate on the "display_picture_url" field.
+func DisplayPictureURLLTE(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldDisplayPictureURL), v))
+	})
+}
+
+// DisplayPictureURLContains applies the Contains predicate on the "display_picture_url" field.
+func DisplayPictureURLContains(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldDisplayPictureURL), v))
+	})
+}
+
+// DisplayPictureURLHasPrefix applies the HasPrefix predicate on the "display_picture_url" field.
+func DisplayPictureURLHasPrefix(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldDisplayPictureURL), v))
+	})
+}
+
+// DisplayPictureURLHasSuffix applies the HasSuffix predicate on the "display_picture_url" field.
+func DisplayPictureURLHasSuffix(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldDisplayPictureURL), v))
+	})
+}
+
+// DisplayPictureURLEqualFold applies the EqualFold predicate on the "display_picture_url" field.
+func DisplayPictureURLEqualFold(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldDisplayPictureURL), v))
+	})
+}
+
+// DisplayPictureURLContainsFold applies the ContainsFold predicate on the "display_picture_url" field.
+func DisplayPictureURLContainsFold(v string) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldDisplayPictureURL), v))
 	})
 }
 

@@ -3,6 +3,7 @@ package middleware
 import (
 	"chatapp/backend/auth"
 	"chatapp/backend/errors"
+	"fmt"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -24,7 +25,16 @@ func NewAuthenticationController(router *gin.Engine, authService auth.AuthServic
 func (controller *AuthenticationControllerImpl) AuthorizeUser(roles []string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authToken := c.Request.Header.Get("authorization")
+		if authToken == "" || !strings.HasPrefix(authToken, "Bearer ") {
+            c.Error(errors.UnauthorizedError)
+			return
+		}
+        fmt.Println("yo lmao")
 		splitToken := strings.Split(authToken, "Bearer ")
+		if len(splitToken) != 2 {
+			c.Error(errors.UnauthorizedError)
+			return
+		}
 		authToken = splitToken[1]
 		uid, claims, err := controller.authService.VerifyUserIdToken(authToken)
 		if err != nil {
@@ -33,7 +43,7 @@ func (controller *AuthenticationControllerImpl) AuthorizeUser(roles []string) gi
 		}
 		for _, role := range roles {
 			if claims[role] == nil {
-				c.Error(errors.NewUnauthorizedError())
+				c.Error(errors.UnauthorizedError)
 				return
 			}
 		}

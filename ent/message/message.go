@@ -17,6 +17,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
+	// EdgeChat holds the string denoting the chat edge name in mutations.
+	EdgeChat = "chat"
 	// Table holds the table name of the message in the database.
 	Table = "messages"
 	// UserTable is the table that holds the user relation/edge.
@@ -26,6 +28,13 @@ const (
 	UserInverseTable = "users"
 	// UserColumn is the table column denoting the user relation/edge.
 	UserColumn = "user_messages"
+	// ChatTable is the table that holds the chat relation/edge.
+	ChatTable = "messages"
+	// ChatInverseTable is the table name for the Chat entity.
+	// It exists in this package in order to avoid circular dependency with the "chat" package.
+	ChatInverseTable = "chats"
+	// ChatColumn is the table column denoting the chat relation/edge.
+	ChatColumn = "chat_messages"
 )
 
 // Columns holds all SQL columns for message fields.
@@ -38,6 +47,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "messages"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
+	"chat_messages",
 	"user_messages",
 }
 

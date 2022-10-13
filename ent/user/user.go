@@ -9,6 +9,8 @@ const (
 	FieldID = "id"
 	// FieldBio holds the string denoting the bio field in the database.
 	FieldBio = "bio"
+	// FieldDisplayPictureURL holds the string denoting the display_picture_url field in the database.
+	FieldDisplayPictureURL = "display_picture_url"
 	// EdgeLogin holds the string denoting the login edge name in mutations.
 	EdgeLogin = "login"
 	// EdgeMessages holds the string denoting the messages edge name in mutations.
@@ -51,6 +53,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldBio,
+	FieldDisplayPictureURL,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "users"

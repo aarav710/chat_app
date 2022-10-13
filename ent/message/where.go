@@ -310,6 +310,34 @@ func HasUserWith(preds ...predicate.User) predicate.Message {
 	})
 }
 
+// HasChat applies the HasEdge predicate on the "chat" edge.
+func HasChat() predicate.Message {
+	return predicate.Message(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ChatTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ChatTable, ChatColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasChatWith applies the HasEdge predicate on the "chat" edge with a given conditions (other predicates).
+func HasChatWith(preds ...predicate.Chat) predicate.Message {
+	return predicate.Message(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ChatInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ChatTable, ChatColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Message) predicate.Message {
 	return predicate.Message(func(s *sql.Selector) {

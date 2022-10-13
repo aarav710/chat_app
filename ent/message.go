@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"chatapp/backend/ent/chat"
 	"chatapp/backend/ent/message"
 	"chatapp/backend/ent/user"
 	"fmt"
@@ -24,6 +25,7 @@ type Message struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MessageQuery when eager-loading is set.
 	Edges         MessageEdges `json:"edges"`
+	chat_messages *int
 	user_messages *int
 }
 
@@ -31,9 +33,11 @@ type Message struct {
 type MessageEdges struct {
 	// User holds the value of the user edge.
 	User *User `json:"user,omitempty"`
+	// Chat holds the value of the chat edge.
+	Chat *Chat `json:"chat,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -50,6 +54,20 @@ func (e MessageEdges) UserOrErr() (*User, error) {
 	return nil, &NotLoadedError{edge: "user"}
 }
 
+// ChatOrErr returns the Chat value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e MessageEdges) ChatOrErr() (*Chat, error) {
+	if e.loadedTypes[1] {
+		if e.Chat == nil {
+			// The edge chat was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: chat.Label}
+		}
+		return e.Chat, nil
+	}
+	return nil, &NotLoadedError{edge: "chat"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Message) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
@@ -61,7 +79,9 @@ func (*Message) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullString)
 		case message.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case message.ForeignKeys[0]: // user_messages
+		case message.ForeignKeys[0]: // chat_messages
+			values[i] = new(sql.NullInt64)
+		case message.ForeignKeys[1]: // user_messages
 			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Message", columns[i])
@@ -98,6 +118,13 @@ func (m *Message) assignValues(columns []string, values []interface{}) error {
 			}
 		case message.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field chat_messages", value)
+			} else if value.Valid {
+				m.chat_messages = new(int)
+				*m.chat_messages = int(value.Int64)
+			}
+		case message.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field user_messages", value)
 			} else if value.Valid {
 				m.user_messages = new(int)
@@ -111,6 +138,11 @@ func (m *Message) assignValues(columns []string, values []interface{}) error {
 // QueryUser queries the "user" edge of the Message entity.
 func (m *Message) QueryUser() *UserQuery {
 	return (&MessageClient{config: m.config}).QueryUser(m)
+}
+
+// QueryChat queries the "chat" edge of the Message entity.
+func (m *Message) QueryChat() *ChatQuery {
+	return (&MessageClient{config: m.config}).QueryChat(m)
 }
 
 // Update returns a builder for updating this Message.

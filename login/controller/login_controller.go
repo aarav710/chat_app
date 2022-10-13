@@ -14,18 +14,18 @@ type LoginController interface {
 }
 
 type LoginControllerImpl struct {
-	router      *gin.Engine
-  loginService service.LoginService
+	router       *gin.Engine
+	loginService service.LoginService
 }
 
 func NewLoginController(router *gin.Engine, loginService service.LoginService) LoginController {
 	loginController := LoginControllerImpl{router: router, loginService: loginService}
-  loginController.router.GET("users/register", loginController.Register)
+	loginController.router.GET("users/register", loginController.Register)
 	return &loginController
 }
 
 func (controller *LoginControllerImpl) Register(c *gin.Context) {
-  var register loginMappings.Register
+	var register loginMappings.Register
 	if err := c.ShouldBindJSON(&register); err != nil {
 		c.Error(err)
 		return
@@ -35,5 +35,5 @@ func (controller *LoginControllerImpl) Register(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-  c.JSON(http.StatusOK, gin.H{"username": login.Username, "email": login.Email})
+	c.JSON(http.StatusOK, gin.H{"username": login.Username, "email": login.Email})
 }

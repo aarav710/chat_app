@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"chatapp/backend/ent/chat"
 	"chatapp/backend/ent/message"
 	"chatapp/backend/ent/user"
 	"context"
@@ -58,6 +59,25 @@ func (mc *MessageCreate) SetNillableUserID(id *int) *MessageCreate {
 // SetUser sets the "user" edge to the User entity.
 func (mc *MessageCreate) SetUser(u *User) *MessageCreate {
 	return mc.SetUserID(u.ID)
+}
+
+// SetChatID sets the "chat" edge to the Chat entity by ID.
+func (mc *MessageCreate) SetChatID(id int) *MessageCreate {
+	mc.mutation.SetChatID(id)
+	return mc
+}
+
+// SetNillableChatID sets the "chat" edge to the Chat entity by ID if the given value is not nil.
+func (mc *MessageCreate) SetNillableChatID(id *int) *MessageCreate {
+	if id != nil {
+		mc = mc.SetChatID(*id)
+	}
+	return mc
+}
+
+// SetChat sets the "chat" edge to the Chat entity.
+func (mc *MessageCreate) SetChat(c *Chat) *MessageCreate {
+	return mc.SetChatID(c.ID)
 }
 
 // Mutation returns the MessageMutation object of the builder.
@@ -212,6 +232,26 @@ func (mc *MessageCreate) createSpec() (*Message, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.user_messages = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := mc.mutation.ChatIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   message.ChatTable,
+			Columns: []string{message.ChatColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: chat.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.chat_messages = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

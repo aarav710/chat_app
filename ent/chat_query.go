@@ -5,6 +5,7 @@ package ent
 import (
 	"chatapp/backend/ent/chat"
 	"chatapp/backend/ent/chatroles"
+	"chatapp/backend/ent/message"
 	"chatapp/backend/ent/predicate"
 	"chatapp/backend/ent/user"
 	"context"
@@ -29,6 +30,7 @@ type ChatQuery struct {
 	// eager-loading edges.
 	withUsers     *UserQuery
 	withChatRoles *ChatRolesQuery
+	withMessages  *MessageQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -102,6 +104,28 @@ func (cq *ChatQuery) QueryChatRoles() *ChatRolesQuery {
 			sqlgraph.From(chat.Table, chat.FieldID, selector),
 			sqlgraph.To(chatroles.Table, chatroles.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, chat.ChatRolesTable, chat.ChatRolesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMessages chains the current query on the "messages" edge.
+func (cq *ChatQuery) QueryMessages() *MessageQuery {
+	query := &MessageQuery{config: cq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := cq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(chat.Table, chat.FieldID, selector),
+			sqlgraph.To(message.Table, message.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, chat.MessagesTable, chat.MessagesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
 		return fromU, nil
@@ -292,6 +316,7 @@ func (cq *ChatQuery) Clone() *ChatQuery {
 		predicates:    append([]predicate.Chat{}, cq.predicates...),
 		withUsers:     cq.withUsers.Clone(),
 		withChatRoles: cq.withChatRoles.Clone(),
+		withMessages:  cq.withMessages.Clone(),
 		// clone intermediate query.
 		sql:    cq.sql.Clone(),
 		path:   cq.path,
@@ -321,21 +346,31 @@ func (cq *ChatQuery) WithChatRoles(opts ...func(*ChatRolesQuery)) *ChatQuery {
 	return cq
 }
 
+// WithMessages tells the query-builder to eager-load the nodes that are connected to
+// the "messages" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *ChatQuery) WithMessages(opts ...func(*MessageQuery)) *ChatQuery {
+	query := &MessageQuery{config: cq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	cq.withMessages = query
+	return cq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
 //
 //	var v []struct {
-//		GroupName string `json:"group_name,omitempty"`
+//		Title string `json:"title,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Chat.Query().
-//		GroupBy(chat.FieldGroupName).
+//		GroupBy(chat.FieldTitle).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (cq *ChatQuery) GroupBy(field string, fields ...string) *ChatGroupBy {
 	grbuild := &ChatGroupBy{config: cq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -356,13 +391,12 @@ func (cq *ChatQuery) GroupBy(field string, fields ...string) *ChatGroupBy {
 // Example:
 //
 //	var v []struct {
-//		GroupName string `json:"group_name,omitempty"`
+//		Title string `json:"title,omitempty"`
 //	}
 //
 //	client.Chat.Query().
-//		Select(chat.FieldGroupName).
+//		Select(chat.FieldTitle).
 //		Scan(ctx, &v)
-//
 func (cq *ChatQuery) Select(fields ...string) *ChatSelect {
 	cq.fields = append(cq.fields, fields...)
 	selbuild := &ChatSelect{ChatQuery: cq}
@@ -391,9 +425,10 @@ func (cq *ChatQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Chat, e
 	var (
 		nodes       = []*Chat{}
 		_spec       = cq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			cq.withUsers != nil,
 			cq.withChatRoles != nil,
+			cq.withMessages != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
@@ -494,6 +529,35 @@ func (cq *ChatQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Chat, e
 				return nil, fmt.Errorf(`unexpected foreign-key "chat_chat_roles" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.ChatRoles = append(node.Edges.ChatRoles, n)
+		}
+	}
+
+	if query := cq.withMessages; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Chat)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Messages = []*Message{}
+		}
+		query.withFKs = true
+		query.Where(predicate.Message(func(s *sql.Selector) {
+			s.Where(sql.InValues(chat.MessagesColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.chat_messages
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "chat_messages" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "chat_messages" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Messages = append(node.Edges.Messages, n)
 		}
 	}
 

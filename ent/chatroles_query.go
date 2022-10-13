@@ -335,7 +335,6 @@ func (crq *ChatRolesQuery) WithUser(opts ...func(*UserQuery)) *ChatRolesQuery {
 //		GroupBy(chatroles.FieldRole).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (crq *ChatRolesQuery) GroupBy(field string, fields ...string) *ChatRolesGroupBy {
 	grbuild := &ChatRolesGroupBy{config: crq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -362,7 +361,6 @@ func (crq *ChatRolesQuery) GroupBy(field string, fields ...string) *ChatRolesGro
 //	client.ChatRoles.Query().
 //		Select(chatroles.FieldRole).
 //		Scan(ctx, &v)
-//
 func (crq *ChatRolesQuery) Select(fields ...string) *ChatRolesSelect {
 	crq.fields = append(crq.fields, fields...)
 	selbuild := &ChatRolesSelect{ChatRolesQuery: crq}

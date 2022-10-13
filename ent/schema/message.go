@@ -25,5 +25,6 @@ func (Message) Fields() []ent.Field {
 func (Message) Edges() []ent.Edge {
 	return []ent.Edge {
 		edge.From("user", User.Type).Ref("messages").Unique(),
+		edge.From("chat", Chat.Type).Ref("messages").Unique(),
 	}
 }

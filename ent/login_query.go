@@ -299,7 +299,6 @@ func (lq *LoginQuery) WithUser(opts ...func(*UserQuery)) *LoginQuery {
 //		GroupBy(login.FieldUsername).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (lq *LoginQuery) GroupBy(field string, fields ...string) *LoginGroupBy {
 	grbuild := &LoginGroupBy{config: lq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -326,7 +325,6 @@ func (lq *LoginQuery) GroupBy(field string, fields ...string) *LoginGroupBy {
 //	client.Login.Query().
 //		Select(login.FieldUsername).
 //		Scan(ctx, &v)
-//
 func (lq *LoginQuery) Select(fields ...string) *LoginSelect {
 	lq.fields = append(lq.fields, fields...)
 	selbuild := &LoginSelect{LoginQuery: lq}

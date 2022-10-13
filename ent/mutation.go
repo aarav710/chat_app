@@ -37,23 +37,26 @@ const (
 // ChatMutation represents an operation that mutates the Chat nodes in the graph.
 type ChatMutation struct {
 	config
-	op                Op
-	typ               string
-	id                *int
-	group_name        *string
-	created_at        *time.Time
-	description       *string
-	group_photo_url   *string
-	clearedFields     map[string]struct{}
-	users             map[int]struct{}
-	removedusers      map[int]struct{}
-	clearedusers      bool
-	chat_roles        map[int]struct{}
-	removedchat_roles map[int]struct{}
-	clearedchat_roles bool
-	done              bool
-	oldValue          func(context.Context) (*Chat, error)
-	predicates        []predicate.Chat
+	op                  Op
+	typ                 string
+	id                  *int
+	title               *string
+	created_at          *time.Time
+	description         *string
+	display_picture_url *string
+	clearedFields       map[string]struct{}
+	users               map[int]struct{}
+	removedusers        map[int]struct{}
+	clearedusers        bool
+	chat_roles          map[int]struct{}
+	removedchat_roles   map[int]struct{}
+	clearedchat_roles   bool
+	messages            map[int]struct{}
+	removedmessages     map[int]struct{}
+	clearedmessages     bool
+	done                bool
+	oldValue            func(context.Context) (*Chat, error)
+	predicates          []predicate.Chat
 }
 
 var _ ent.Mutation = (*ChatMutation)(nil)
@@ -154,40 +157,40 @@ func (m *ChatMutation) IDs(ctx context.Context) ([]int, error) {
 	}
 }
 
-// SetGroupName sets the "group_name" field.
-func (m *ChatMutation) SetGroupName(s string) {
-	m.group_name = &s
+// SetTitle sets the "title" field.
+func (m *ChatMutation) SetTitle(s string) {
+	m.title = &s
 }
 
-// GroupName returns the value of the "group_name" field in the mutation.
-func (m *ChatMutation) GroupName() (r string, exists bool) {
-	v := m.group_name
+// Title returns the value of the "title" field in the mutation.
+func (m *ChatMutation) Title() (r string, exists bool) {
+	v := m.title
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldGroupName returns the old "group_name" field's value of the Chat entity.
+// OldTitle returns the old "title" field's value of the Chat entity.
 // If the Chat object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ChatMutation) OldGroupName(ctx context.Context) (v string, err error) {
+func (m *ChatMutation) OldTitle(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldGroupName is only allowed on UpdateOne operations")
+		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldGroupName requires an ID field in the mutation")
+		return v, errors.New("OldTitle requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldGroupName: %w", err)
+		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
 	}
-	return oldValue.GroupName, nil
+	return oldValue.Title, nil
 }
 
-// ResetGroupName resets all changes to the "group_name" field.
-func (m *ChatMutation) ResetGroupName() {
-	m.group_name = nil
+// ResetTitle resets all changes to the "title" field.
+func (m *ChatMutation) ResetTitle() {
+	m.title = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -262,40 +265,40 @@ func (m *ChatMutation) ResetDescription() {
 	m.description = nil
 }
 
-// SetGroupPhotoURL sets the "group_photo_url" field.
-func (m *ChatMutation) SetGroupPhotoURL(s string) {
-	m.group_photo_url = &s
+// SetDisplayPictureURL sets the "display_picture_url" field.
+func (m *ChatMutation) SetDisplayPictureURL(s string) {
+	m.display_picture_url = &s
 }
 
-// GroupPhotoURL returns the value of the "group_photo_url" field in the mutation.
-func (m *ChatMutation) GroupPhotoURL() (r string, exists bool) {
-	v := m.group_photo_url
+// DisplayPictureURL returns the value of the "display_picture_url" field in the mutation.
+func (m *ChatMutation) DisplayPictureURL() (r string, exists bool) {
+	v := m.display_picture_url
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldGroupPhotoURL returns the old "group_photo_url" field's value of the Chat entity.
+// OldDisplayPictureURL returns the old "display_picture_url" field's value of the Chat entity.
 // If the Chat object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ChatMutation) OldGroupPhotoURL(ctx context.Context) (v string, err error) {
+func (m *ChatMutation) OldDisplayPictureURL(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldGroupPhotoURL is only allowed on UpdateOne operations")
+		return v, errors.New("OldDisplayPictureURL is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldGroupPhotoURL requires an ID field in the mutation")
+		return v, errors.New("OldDisplayPictureURL requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldGroupPhotoURL: %w", err)
+		return v, fmt.Errorf("querying old value for OldDisplayPictureURL: %w", err)
 	}
-	return oldValue.GroupPhotoURL, nil
+	return oldValue.DisplayPictureURL, nil
 }
 
-// ResetGroupPhotoURL resets all changes to the "group_photo_url" field.
-func (m *ChatMutation) ResetGroupPhotoURL() {
-	m.group_photo_url = nil
+// ResetDisplayPictureURL resets all changes to the "display_picture_url" field.
+func (m *ChatMutation) ResetDisplayPictureURL() {
+	m.display_picture_url = nil
 }
 
 // AddUserIDs adds the "users" edge to the User entity by ids.
@@ -406,6 +409,60 @@ func (m *ChatMutation) ResetChatRoles() {
 	m.removedchat_roles = nil
 }
 
+// AddMessageIDs adds the "messages" edge to the Message entity by ids.
+func (m *ChatMutation) AddMessageIDs(ids ...int) {
+	if m.messages == nil {
+		m.messages = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.messages[ids[i]] = struct{}{}
+	}
+}
+
+// ClearMessages clears the "messages" edge to the Message entity.
+func (m *ChatMutation) ClearMessages() {
+	m.clearedmessages = true
+}
+
+// MessagesCleared reports if the "messages" edge to the Message entity was cleared.
+func (m *ChatMutation) MessagesCleared() bool {
+	return m.clearedmessages
+}
+
+// RemoveMessageIDs removes the "messages" edge to the Message entity by IDs.
+func (m *ChatMutation) RemoveMessageIDs(ids ...int) {
+	if m.removedmessages == nil {
+		m.removedmessages = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.messages, ids[i])
+		m.removedmessages[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedMessages returns the removed IDs of the "messages" edge to the Message entity.
+func (m *ChatMutation) RemovedMessagesIDs() (ids []int) {
+	for id := range m.removedmessages {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// MessagesIDs returns the "messages" edge IDs in the mutation.
+func (m *ChatMutation) MessagesIDs() (ids []int) {
+	for id := range m.messages {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetMessages resets all changes to the "messages" edge.
+func (m *ChatMutation) ResetMessages() {
+	m.messages = nil
+	m.clearedmessages = false
+	m.removedmessages = nil
+}
+
 // Where appends a list predicates to the ChatMutation builder.
 func (m *ChatMutation) Where(ps ...predicate.Chat) {
 	m.predicates = append(m.predicates, ps...)
@@ -426,8 +483,8 @@ func (m *ChatMutation) Type() string {
 // AddedFields().
 func (m *ChatMutation) Fields() []string {
 	fields := make([]string, 0, 4)
-	if m.group_name != nil {
-		fields = append(fields, chat.FieldGroupName)
+	if m.title != nil {
+		fields = append(fields, chat.FieldTitle)
 	}
 	if m.created_at != nil {
 		fields = append(fields, chat.FieldCreatedAt)
@@ -435,8 +492,8 @@ func (m *ChatMutation) Fields() []string {
 	if m.description != nil {
 		fields = append(fields, chat.FieldDescription)
 	}
-	if m.group_photo_url != nil {
-		fields = append(fields, chat.FieldGroupPhotoURL)
+	if m.display_picture_url != nil {
+		fields = append(fields, chat.FieldDisplayPictureURL)
 	}
 	return fields
 }
@@ -446,14 +503,14 @@ func (m *ChatMutation) Fields() []string {
 // schema.
 func (m *ChatMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case chat.FieldGroupName:
-		return m.GroupName()
+	case chat.FieldTitle:
+		return m.Title()
 	case chat.FieldCreatedAt:
 		return m.CreatedAt()
 	case chat.FieldDescription:
 		return m.Description()
-	case chat.FieldGroupPhotoURL:
-		return m.GroupPhotoURL()
+	case chat.FieldDisplayPictureURL:
+		return m.DisplayPictureURL()
 	}
 	return nil, false
 }
@@ -463,14 +520,14 @@ func (m *ChatMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *ChatMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case chat.FieldGroupName:
-		return m.OldGroupName(ctx)
+	case chat.FieldTitle:
+		return m.OldTitle(ctx)
 	case chat.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case chat.FieldDescription:
 		return m.OldDescription(ctx)
-	case chat.FieldGroupPhotoURL:
-		return m.OldGroupPhotoURL(ctx)
+	case chat.FieldDisplayPictureURL:
+		return m.OldDisplayPictureURL(ctx)
 	}
 	return nil, fmt.Errorf("unknown Chat field %s", name)
 }
@@ -480,12 +537,12 @@ func (m *ChatMutation) OldField(ctx context.Context, name string) (ent.Value, er
 // type.
 func (m *ChatMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case chat.FieldGroupName:
+	case chat.FieldTitle:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetGroupName(v)
+		m.SetTitle(v)
 		return nil
 	case chat.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -501,12 +558,12 @@ func (m *ChatMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDescription(v)
 		return nil
-	case chat.FieldGroupPhotoURL:
+	case chat.FieldDisplayPictureURL:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetGroupPhotoURL(v)
+		m.SetDisplayPictureURL(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Chat field %s", name)
@@ -557,8 +614,8 @@ func (m *ChatMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *ChatMutation) ResetField(name string) error {
 	switch name {
-	case chat.FieldGroupName:
-		m.ResetGroupName()
+	case chat.FieldTitle:
+		m.ResetTitle()
 		return nil
 	case chat.FieldCreatedAt:
 		m.ResetCreatedAt()
@@ -566,8 +623,8 @@ func (m *ChatMutation) ResetField(name string) error {
 	case chat.FieldDescription:
 		m.ResetDescription()
 		return nil
-	case chat.FieldGroupPhotoURL:
-		m.ResetGroupPhotoURL()
+	case chat.FieldDisplayPictureURL:
+		m.ResetDisplayPictureURL()
 		return nil
 	}
 	return fmt.Errorf("unknown Chat field %s", name)
@@ -575,12 +632,15 @@ func (m *ChatMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ChatMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.users != nil {
 		edges = append(edges, chat.EdgeUsers)
 	}
 	if m.chat_roles != nil {
 		edges = append(edges, chat.EdgeChatRoles)
+	}
+	if m.messages != nil {
+		edges = append(edges, chat.EdgeMessages)
 	}
 	return edges
 }
@@ -601,18 +661,27 @@ func (m *ChatMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case chat.EdgeMessages:
+		ids := make([]ent.Value, 0, len(m.messages))
+		for id := range m.messages {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ChatMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedusers != nil {
 		edges = append(edges, chat.EdgeUsers)
 	}
 	if m.removedchat_roles != nil {
 		edges = append(edges, chat.EdgeChatRoles)
+	}
+	if m.removedmessages != nil {
+		edges = append(edges, chat.EdgeMessages)
 	}
 	return edges
 }
@@ -633,18 +702,27 @@ func (m *ChatMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case chat.EdgeMessages:
+		ids := make([]ent.Value, 0, len(m.removedmessages))
+		for id := range m.removedmessages {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ChatMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedusers {
 		edges = append(edges, chat.EdgeUsers)
 	}
 	if m.clearedchat_roles {
 		edges = append(edges, chat.EdgeChatRoles)
+	}
+	if m.clearedmessages {
+		edges = append(edges, chat.EdgeMessages)
 	}
 	return edges
 }
@@ -657,6 +735,8 @@ func (m *ChatMutation) EdgeCleared(name string) bool {
 		return m.clearedusers
 	case chat.EdgeChatRoles:
 		return m.clearedchat_roles
+	case chat.EdgeMessages:
+		return m.clearedmessages
 	}
 	return false
 }
@@ -678,6 +758,9 @@ func (m *ChatMutation) ResetEdge(name string) error {
 		return nil
 	case chat.EdgeChatRoles:
 		m.ResetChatRoles()
+		return nil
+	case chat.EdgeMessages:
+		m.ResetMessages()
 		return nil
 	}
 	return fmt.Errorf("unknown Chat edge %s", name)
@@ -1729,6 +1812,8 @@ type MessageMutation struct {
 	clearedFields map[string]struct{}
 	user          *int
 	cleareduser   bool
+	chat          *int
+	clearedchat   bool
 	done          bool
 	oldValue      func(context.Context) (*Message, error)
 	predicates    []predicate.Message
@@ -1943,6 +2028,45 @@ func (m *MessageMutation) ResetUser() {
 	m.cleareduser = false
 }
 
+// SetChatID sets the "chat" edge to the Chat entity by id.
+func (m *MessageMutation) SetChatID(id int) {
+	m.chat = &id
+}
+
+// ClearChat clears the "chat" edge to the Chat entity.
+func (m *MessageMutation) ClearChat() {
+	m.clearedchat = true
+}
+
+// ChatCleared reports if the "chat" edge to the Chat entity was cleared.
+func (m *MessageMutation) ChatCleared() bool {
+	return m.clearedchat
+}
+
+// ChatID returns the "chat" edge ID in the mutation.
+func (m *MessageMutation) ChatID() (id int, exists bool) {
+	if m.chat != nil {
+		return *m.chat, true
+	}
+	return
+}
+
+// ChatIDs returns the "chat" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ChatID instead. It exists only for internal usage by the builders.
+func (m *MessageMutation) ChatIDs() (ids []int) {
+	if id := m.chat; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetChat resets all changes to the "chat" edge.
+func (m *MessageMutation) ResetChat() {
+	m.chat = nil
+	m.clearedchat = false
+}
+
 // Where appends a list predicates to the MessageMutation builder.
 func (m *MessageMutation) Where(ps ...predicate.Message) {
 	m.predicates = append(m.predicates, ps...)
@@ -2078,9 +2202,12 @@ func (m *MessageMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *MessageMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.user != nil {
 		edges = append(edges, message.EdgeUser)
+	}
+	if m.chat != nil {
+		edges = append(edges, message.EdgeChat)
 	}
 	return edges
 }
@@ -2093,13 +2220,17 @@ func (m *MessageMutation) AddedIDs(name string) []ent.Value {
 		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
+	case message.EdgeChat:
+		if id := m.chat; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *MessageMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	return edges
 }
 
@@ -2113,9 +2244,12 @@ func (m *MessageMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *MessageMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.cleareduser {
 		edges = append(edges, message.EdgeUser)
+	}
+	if m.clearedchat {
+		edges = append(edges, message.EdgeChat)
 	}
 	return edges
 }
@@ -2126,6 +2260,8 @@ func (m *MessageMutation) EdgeCleared(name string) bool {
 	switch name {
 	case message.EdgeUser:
 		return m.cleareduser
+	case message.EdgeChat:
+		return m.clearedchat
 	}
 	return false
 }
@@ -2136,6 +2272,9 @@ func (m *MessageMutation) ClearEdge(name string) error {
 	switch name {
 	case message.EdgeUser:
 		m.ClearUser()
+		return nil
+	case message.EdgeChat:
+		m.ClearChat()
 		return nil
 	}
 	return fmt.Errorf("unknown Message unique edge %s", name)
@@ -2148,6 +2287,9 @@ func (m *MessageMutation) ResetEdge(name string) error {
 	case message.EdgeUser:
 		m.ResetUser()
 		return nil
+	case message.EdgeChat:
+		m.ResetChat()
+		return nil
 	}
 	return fmt.Errorf("unknown Message edge %s", name)
 }
@@ -2159,6 +2301,7 @@ type UserMutation struct {
 	typ                   string
 	id                    *int
 	bio                   *string
+	display_picture_url   *string
 	clearedFields         map[string]struct{}
 	login                 *int
 	clearedlogin          bool
@@ -2308,6 +2451,42 @@ func (m *UserMutation) OldBio(ctx context.Context) (v string, err error) {
 // ResetBio resets all changes to the "bio" field.
 func (m *UserMutation) ResetBio() {
 	m.bio = nil
+}
+
+// SetDisplayPictureURL sets the "display_picture_url" field.
+func (m *UserMutation) SetDisplayPictureURL(s string) {
+	m.display_picture_url = &s
+}
+
+// DisplayPictureURL returns the value of the "display_picture_url" field in the mutation.
+func (m *UserMutation) DisplayPictureURL() (r string, exists bool) {
+	v := m.display_picture_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDisplayPictureURL returns the old "display_picture_url" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldDisplayPictureURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDisplayPictureURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDisplayPictureURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDisplayPictureURL: %w", err)
+	}
+	return oldValue.DisplayPictureURL, nil
+}
+
+// ResetDisplayPictureURL resets all changes to the "display_picture_url" field.
+func (m *UserMutation) ResetDisplayPictureURL() {
+	m.display_picture_url = nil
 }
 
 // SetLoginID sets the "login" edge to the Login entity by id.
@@ -2530,9 +2709,12 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 1)
+	fields := make([]string, 0, 2)
 	if m.bio != nil {
 		fields = append(fields, user.FieldBio)
+	}
+	if m.display_picture_url != nil {
+		fields = append(fields, user.FieldDisplayPictureURL)
 	}
 	return fields
 }
@@ -2544,6 +2726,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case user.FieldBio:
 		return m.Bio()
+	case user.FieldDisplayPictureURL:
+		return m.DisplayPictureURL()
 	}
 	return nil, false
 }
@@ -2555,6 +2739,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 	switch name {
 	case user.FieldBio:
 		return m.OldBio(ctx)
+	case user.FieldDisplayPictureURL:
+		return m.OldDisplayPictureURL(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -2570,6 +2756,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetBio(v)
+		return nil
+	case user.FieldDisplayPictureURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDisplayPictureURL(v)
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
@@ -2622,6 +2815,9 @@ func (m *UserMutation) ResetField(name string) error {
 	switch name {
 	case user.FieldBio:
 		m.ResetBio()
+		return nil
+	case user.FieldDisplayPictureURL:
+		m.ResetDisplayPictureURL()
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)

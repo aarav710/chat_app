@@ -16,10 +16,10 @@ type Chat struct {
 // Fields of the Chat.
 func (Chat) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("group_name"),
+		field.String("title"),
 		field.Time("created_at").Default(time.Now),
 		field.String("description"),
-		field.String("group_photo_url"),
+		field.String("display_picture_url"),
 	}
 }
 
@@ -28,5 +28,6 @@ func (Chat) Edges() []ent.Edge {
 	return []ent.Edge {
 		edge.To("users", User.Type),
 		edge.To("chat_roles", ChatRoles.Type),
+		edge.To("messages", Message.Type),
 	}
 }

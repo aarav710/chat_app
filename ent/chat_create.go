@@ -5,6 +5,7 @@ package ent
 import (
 	"chatapp/backend/ent/chat"
 	"chatapp/backend/ent/chatroles"
+	"chatapp/backend/ent/message"
 	"chatapp/backend/ent/user"
 	"context"
 	"errors"
@@ -22,9 +23,9 @@ type ChatCreate struct {
 	hooks    []Hook
 }
 
-// SetGroupName sets the "group_name" field.
-func (cc *ChatCreate) SetGroupName(s string) *ChatCreate {
-	cc.mutation.SetGroupName(s)
+// SetTitle sets the "title" field.
+func (cc *ChatCreate) SetTitle(s string) *ChatCreate {
+	cc.mutation.SetTitle(s)
 	return cc
 }
 
@@ -48,9 +49,9 @@ func (cc *ChatCreate) SetDescription(s string) *ChatCreate {
 	return cc
 }
 
-// SetGroupPhotoURL sets the "group_photo_url" field.
-func (cc *ChatCreate) SetGroupPhotoURL(s string) *ChatCreate {
-	cc.mutation.SetGroupPhotoURL(s)
+// SetDisplayPictureURL sets the "display_picture_url" field.
+func (cc *ChatCreate) SetDisplayPictureURL(s string) *ChatCreate {
+	cc.mutation.SetDisplayPictureURL(s)
 	return cc
 }
 
@@ -82,6 +83,21 @@ func (cc *ChatCreate) AddChatRoles(c ...*ChatRoles) *ChatCreate {
 		ids[i] = c[i].ID
 	}
 	return cc.AddChatRoleIDs(ids...)
+}
+
+// AddMessageIDs adds the "messages" edge to the Message entity by IDs.
+func (cc *ChatCreate) AddMessageIDs(ids ...int) *ChatCreate {
+	cc.mutation.AddMessageIDs(ids...)
+	return cc
+}
+
+// AddMessages adds the "messages" edges to the Message entity.
+func (cc *ChatCreate) AddMessages(m ...*Message) *ChatCreate {
+	ids := make([]int, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return cc.AddMessageIDs(ids...)
 }
 
 // Mutation returns the ChatMutation object of the builder.
@@ -169,8 +185,8 @@ func (cc *ChatCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (cc *ChatCreate) check() error {
-	if _, ok := cc.mutation.GroupName(); !ok {
-		return &ValidationError{Name: "group_name", err: errors.New(`ent: missing required field "Chat.group_name"`)}
+	if _, ok := cc.mutation.Title(); !ok {
+		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Chat.title"`)}
 	}
 	if _, ok := cc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Chat.created_at"`)}
@@ -178,8 +194,8 @@ func (cc *ChatCreate) check() error {
 	if _, ok := cc.mutation.Description(); !ok {
 		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "Chat.description"`)}
 	}
-	if _, ok := cc.mutation.GroupPhotoURL(); !ok {
-		return &ValidationError{Name: "group_photo_url", err: errors.New(`ent: missing required field "Chat.group_photo_url"`)}
+	if _, ok := cc.mutation.DisplayPictureURL(); !ok {
+		return &ValidationError{Name: "display_picture_url", err: errors.New(`ent: missing required field "Chat.display_picture_url"`)}
 	}
 	return nil
 }
@@ -208,13 +224,13 @@ func (cc *ChatCreate) createSpec() (*Chat, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
-	if value, ok := cc.mutation.GroupName(); ok {
+	if value, ok := cc.mutation.Title(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: chat.FieldGroupName,
+			Column: chat.FieldTitle,
 		})
-		_node.GroupName = value
+		_node.Title = value
 	}
 	if value, ok := cc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -232,13 +248,13 @@ func (cc *ChatCreate) createSpec() (*Chat, *sqlgraph.CreateSpec) {
 		})
 		_node.Description = value
 	}
-	if value, ok := cc.mutation.GroupPhotoURL(); ok {
+	if value, ok := cc.mutation.DisplayPictureURL(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: chat.FieldGroupPhotoURL,
+			Column: chat.FieldDisplayPictureURL,
 		})
-		_node.GroupPhotoURL = value
+		_node.DisplayPictureURL = value
 	}
 	if nodes := cc.mutation.UsersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -270,6 +286,25 @@ func (cc *ChatCreate) createSpec() (*Chat, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: chatroles.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cc.mutation.MessagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   chat.MessagesTable,
+			Columns: []string{chat.MessagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: message.FieldID,
 				},
 			},
 		}

@@ -25,10 +25,10 @@ func TestGetUserById(t *testing.T) {
 			t.Errorf("Incorrect response from user service")
 		}
 	})
-  t.Run("user exists", func(t *testing.T) {
+	t.Run("user exists", func(t *testing.T) {
 		expectUser := &ent.User{
-      ID: 5,
-      Bio: "hello world!",
+			ID:  5,
+			Bio: "hello world!",
 		}
 		userRepoMock.EXPECT().GetUserById(userId).Return(expectUser, nil)
 		userService := NewUserService(userRepoMock)
@@ -37,7 +37,7 @@ func TestGetUserById(t *testing.T) {
 			t.Errorf("Incorrect response from user service")
 		}
 		if err != nil {
-      t.Errorf("expected no problem from user service.")
+			t.Errorf("expected no problem from user service.")
 		}
 	})
 }
@@ -49,7 +49,7 @@ func TestGetUsersByUsername(t *testing.T) {
 	userRepoMock := mockUserRepo.NewMockUserRepo(ctrl)
 	username := "john"
 	t.Run("users do not exist", func(t *testing.T) {
-		var result []*ent.User 
+		var result []*ent.User
 		userRepoMock.EXPECT().GetUsersContainingUsername(username).Return(result, nil)
 		userService := NewUserService(userRepoMock)
 		users, err := userService.GetUsersByUsername(username)
@@ -58,3 +58,6 @@ func TestGetUsersByUsername(t *testing.T) {
 		}
 	})
 }
+
+
+

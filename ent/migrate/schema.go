@@ -11,10 +11,10 @@ var (
 	// ChatsColumns holds the columns for the "chats" table.
 	ChatsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "group_name", Type: field.TypeString},
+		{Name: "title", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "description", Type: field.TypeString},
-		{Name: "group_photo_url", Type: field.TypeString},
+		{Name: "display_picture_url", Type: field.TypeString},
 	}
 	// ChatsTable holds the schema information for the "chats" table.
 	ChatsTable = &schema.Table{
@@ -69,6 +69,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "text", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "chat_messages", Type: field.TypeInt, Nullable: true},
 		{Name: "user_messages", Type: field.TypeInt, Nullable: true},
 	}
 	// MessagesTable holds the schema information for the "messages" table.
@@ -78,8 +79,14 @@ var (
 		PrimaryKey: []*schema.Column{MessagesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "messages_users_messages",
+				Symbol:     "messages_chats_messages",
 				Columns:    []*schema.Column{MessagesColumns[3]},
+				RefColumns: []*schema.Column{ChatsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "messages_users_messages",
+				Columns:    []*schema.Column{MessagesColumns[4]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -88,7 +95,8 @@ var (
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "bio", Type: field.TypeString, Unique: true},
+		{Name: "bio", Type: field.TypeString},
+		{Name: "display_picture_url", Type: field.TypeString},
 		{Name: "login_user", Type: field.TypeInt, Unique: true},
 	}
 	// UsersTable holds the schema information for the "users" table.
@@ -99,7 +107,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "users_logins_user",
-				Columns:    []*schema.Column{UsersColumns[2]},
+				Columns:    []*schema.Column{UsersColumns[3]},
 				RefColumns: []*schema.Column{LoginsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -144,7 +152,8 @@ var (
 func init() {
 	ChatRolesTable.ForeignKeys[0].RefTable = ChatsTable
 	ChatRolesTable.ForeignKeys[1].RefTable = UsersTable
-	MessagesTable.ForeignKeys[0].RefTable = UsersTable
+	MessagesTable.ForeignKeys[0].RefTable = ChatsTable
+	MessagesTable.ForeignKeys[1].RefTable = UsersTable
 	UsersTable.ForeignKeys[0].RefTable = LoginsTable
 	ChatUsersTable.ForeignKeys[0].RefTable = ChatsTable
 	ChatUsersTable.ForeignKeys[1].RefTable = UsersTable

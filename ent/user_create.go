@@ -29,6 +29,12 @@ func (uc *UserCreate) SetBio(s string) *UserCreate {
 	return uc
 }
 
+// SetDisplayPictureURL sets the "display_picture_url" field.
+func (uc *UserCreate) SetDisplayPictureURL(s string) *UserCreate {
+	uc.mutation.SetDisplayPictureURL(s)
+	return uc
+}
+
 // SetLoginID sets the "login" edge to the Login entity by ID.
 func (uc *UserCreate) SetLoginID(id int) *UserCreate {
 	uc.mutation.SetLoginID(id)
@@ -164,6 +170,9 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.Bio(); !ok {
 		return &ValidationError{Name: "bio", err: errors.New(`ent: missing required field "User.bio"`)}
 	}
+	if _, ok := uc.mutation.DisplayPictureURL(); !ok {
+		return &ValidationError{Name: "display_picture_url", err: errors.New(`ent: missing required field "User.display_picture_url"`)}
+	}
 	if _, ok := uc.mutation.LoginID(); !ok {
 		return &ValidationError{Name: "login", err: errors.New(`ent: missing required edge "User.login"`)}
 	}
@@ -201,6 +210,14 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Column: user.FieldBio,
 		})
 		_node.Bio = value
+	}
+	if value, ok := uc.mutation.DisplayPictureURL(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldDisplayPictureURL,
+		})
+		_node.DisplayPictureURL = value
 	}
 	if nodes := uc.mutation.LoginIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

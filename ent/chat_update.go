@@ -5,6 +5,7 @@ package ent
 import (
 	"chatapp/backend/ent/chat"
 	"chatapp/backend/ent/chatroles"
+	"chatapp/backend/ent/message"
 	"chatapp/backend/ent/predicate"
 	"chatapp/backend/ent/user"
 	"context"
@@ -30,9 +31,9 @@ func (cu *ChatUpdate) Where(ps ...predicate.Chat) *ChatUpdate {
 	return cu
 }
 
-// SetGroupName sets the "group_name" field.
-func (cu *ChatUpdate) SetGroupName(s string) *ChatUpdate {
-	cu.mutation.SetGroupName(s)
+// SetTitle sets the "title" field.
+func (cu *ChatUpdate) SetTitle(s string) *ChatUpdate {
+	cu.mutation.SetTitle(s)
 	return cu
 }
 
@@ -56,9 +57,9 @@ func (cu *ChatUpdate) SetDescription(s string) *ChatUpdate {
 	return cu
 }
 
-// SetGroupPhotoURL sets the "group_photo_url" field.
-func (cu *ChatUpdate) SetGroupPhotoURL(s string) *ChatUpdate {
-	cu.mutation.SetGroupPhotoURL(s)
+// SetDisplayPictureURL sets the "display_picture_url" field.
+func (cu *ChatUpdate) SetDisplayPictureURL(s string) *ChatUpdate {
+	cu.mutation.SetDisplayPictureURL(s)
 	return cu
 }
 
@@ -90,6 +91,21 @@ func (cu *ChatUpdate) AddChatRoles(c ...*ChatRoles) *ChatUpdate {
 		ids[i] = c[i].ID
 	}
 	return cu.AddChatRoleIDs(ids...)
+}
+
+// AddMessageIDs adds the "messages" edge to the Message entity by IDs.
+func (cu *ChatUpdate) AddMessageIDs(ids ...int) *ChatUpdate {
+	cu.mutation.AddMessageIDs(ids...)
+	return cu
+}
+
+// AddMessages adds the "messages" edges to the Message entity.
+func (cu *ChatUpdate) AddMessages(m ...*Message) *ChatUpdate {
+	ids := make([]int, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return cu.AddMessageIDs(ids...)
 }
 
 // Mutation returns the ChatMutation object of the builder.
@@ -137,6 +153,27 @@ func (cu *ChatUpdate) RemoveChatRoles(c ...*ChatRoles) *ChatUpdate {
 		ids[i] = c[i].ID
 	}
 	return cu.RemoveChatRoleIDs(ids...)
+}
+
+// ClearMessages clears all "messages" edges to the Message entity.
+func (cu *ChatUpdate) ClearMessages() *ChatUpdate {
+	cu.mutation.ClearMessages()
+	return cu
+}
+
+// RemoveMessageIDs removes the "messages" edge to Message entities by IDs.
+func (cu *ChatUpdate) RemoveMessageIDs(ids ...int) *ChatUpdate {
+	cu.mutation.RemoveMessageIDs(ids...)
+	return cu
+}
+
+// RemoveMessages removes "messages" edges to Message entities.
+func (cu *ChatUpdate) RemoveMessages(m ...*Message) *ChatUpdate {
+	ids := make([]int, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return cu.RemoveMessageIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -211,11 +248,11 @@ func (cu *ChatUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := cu.mutation.GroupName(); ok {
+	if value, ok := cu.mutation.Title(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: chat.FieldGroupName,
+			Column: chat.FieldTitle,
 		})
 	}
 	if value, ok := cu.mutation.CreatedAt(); ok {
@@ -232,11 +269,11 @@ func (cu *ChatUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: chat.FieldDescription,
 		})
 	}
-	if value, ok := cu.mutation.GroupPhotoURL(); ok {
+	if value, ok := cu.mutation.DisplayPictureURL(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: chat.FieldGroupPhotoURL,
+			Column: chat.FieldDisplayPictureURL,
 		})
 	}
 	if cu.mutation.UsersCleared() {
@@ -347,6 +384,60 @@ func (cu *ChatUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if cu.mutation.MessagesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   chat.MessagesTable,
+			Columns: []string{chat.MessagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: message.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.RemovedMessagesIDs(); len(nodes) > 0 && !cu.mutation.MessagesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   chat.MessagesTable,
+			Columns: []string{chat.MessagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: message.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.MessagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   chat.MessagesTable,
+			Columns: []string{chat.MessagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: message.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, cu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{chat.Label}
@@ -366,9 +457,9 @@ type ChatUpdateOne struct {
 	mutation *ChatMutation
 }
 
-// SetGroupName sets the "group_name" field.
-func (cuo *ChatUpdateOne) SetGroupName(s string) *ChatUpdateOne {
-	cuo.mutation.SetGroupName(s)
+// SetTitle sets the "title" field.
+func (cuo *ChatUpdateOne) SetTitle(s string) *ChatUpdateOne {
+	cuo.mutation.SetTitle(s)
 	return cuo
 }
 
@@ -392,9 +483,9 @@ func (cuo *ChatUpdateOne) SetDescription(s string) *ChatUpdateOne {
 	return cuo
 }
 
-// SetGroupPhotoURL sets the "group_photo_url" field.
-func (cuo *ChatUpdateOne) SetGroupPhotoURL(s string) *ChatUpdateOne {
-	cuo.mutation.SetGroupPhotoURL(s)
+// SetDisplayPictureURL sets the "display_picture_url" field.
+func (cuo *ChatUpdateOne) SetDisplayPictureURL(s string) *ChatUpdateOne {
+	cuo.mutation.SetDisplayPictureURL(s)
 	return cuo
 }
 
@@ -426,6 +517,21 @@ func (cuo *ChatUpdateOne) AddChatRoles(c ...*ChatRoles) *ChatUpdateOne {
 		ids[i] = c[i].ID
 	}
 	return cuo.AddChatRoleIDs(ids...)
+}
+
+// AddMessageIDs adds the "messages" edge to the Message entity by IDs.
+func (cuo *ChatUpdateOne) AddMessageIDs(ids ...int) *ChatUpdateOne {
+	cuo.mutation.AddMessageIDs(ids...)
+	return cuo
+}
+
+// AddMessages adds the "messages" edges to the Message entity.
+func (cuo *ChatUpdateOne) AddMessages(m ...*Message) *ChatUpdateOne {
+	ids := make([]int, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return cuo.AddMessageIDs(ids...)
 }
 
 // Mutation returns the ChatMutation object of the builder.
@@ -473,6 +579,27 @@ func (cuo *ChatUpdateOne) RemoveChatRoles(c ...*ChatRoles) *ChatUpdateOne {
 		ids[i] = c[i].ID
 	}
 	return cuo.RemoveChatRoleIDs(ids...)
+}
+
+// ClearMessages clears all "messages" edges to the Message entity.
+func (cuo *ChatUpdateOne) ClearMessages() *ChatUpdateOne {
+	cuo.mutation.ClearMessages()
+	return cuo
+}
+
+// RemoveMessageIDs removes the "messages" edge to Message entities by IDs.
+func (cuo *ChatUpdateOne) RemoveMessageIDs(ids ...int) *ChatUpdateOne {
+	cuo.mutation.RemoveMessageIDs(ids...)
+	return cuo
+}
+
+// RemoveMessages removes "messages" edges to Message entities.
+func (cuo *ChatUpdateOne) RemoveMessages(m ...*Message) *ChatUpdateOne {
+	ids := make([]int, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return cuo.RemoveMessageIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -577,11 +704,11 @@ func (cuo *ChatUpdateOne) sqlSave(ctx context.Context) (_node *Chat, err error) 
 			}
 		}
 	}
-	if value, ok := cuo.mutation.GroupName(); ok {
+	if value, ok := cuo.mutation.Title(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: chat.FieldGroupName,
+			Column: chat.FieldTitle,
 		})
 	}
 	if value, ok := cuo.mutation.CreatedAt(); ok {
@@ -598,11 +725,11 @@ func (cuo *ChatUpdateOne) sqlSave(ctx context.Context) (_node *Chat, err error) 
 			Column: chat.FieldDescription,
 		})
 	}
-	if value, ok := cuo.mutation.GroupPhotoURL(); ok {
+	if value, ok := cuo.mutation.DisplayPictureURL(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: chat.FieldGroupPhotoURL,
+			Column: chat.FieldDisplayPictureURL,
 		})
 	}
 	if cuo.mutation.UsersCleared() {
@@ -705,6 +832,60 @@ func (cuo *ChatUpdateOne) sqlSave(ctx context.Context) (_node *Chat, err error) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: chatroles.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cuo.mutation.MessagesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   chat.MessagesTable,
+			Columns: []string{chat.MessagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: message.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.RemovedMessagesIDs(); len(nodes) > 0 && !cuo.mutation.MessagesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   chat.MessagesTable,
+			Columns: []string{chat.MessagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: message.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.MessagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   chat.MessagesTable,
+			Columns: []string{chat.MessagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: message.FieldID,
 				},
 			},
 		}

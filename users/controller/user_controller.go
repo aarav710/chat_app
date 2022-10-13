@@ -18,6 +18,9 @@ type UserController interface {
 	GetUserById(c *gin.Context)
 	GetUsersUsername(c *gin.Context)
 	Me(c *gin.Context)
+	UpdateUser(c *gin.Context)
+	FindUsersByChatId(c *gin.Context)
+	CreateUser(c *gin.Context)
 }
 
 type UserControllerImpl struct {
@@ -29,17 +32,20 @@ type UserControllerImpl struct {
 func NewUserController(router *gin.Engine, userService service.UserService, authService auth.AuthService) UserController {
 	authenticationController := authenticationController.NewAuthenticationController(router, authService)
 	userController := UserControllerImpl{router: router, userService: userService, AuthenticationController: authenticationController}
-	userController.router.GET("/users/:id", userController.AuthorizeUser([]string{auth.ROLE_USER}), userController.GetUserById)
+	userController.router.GET("/users/:userId", userController.AuthorizeUser([]string{auth.ROLE_USER}), userController.GetUserById)
 	userController.router.GET("/users", userController.GetUsersUsername)
 	userController.router.GET("/users/me", userController.AuthorizeUser([]string{auth.ROLE_USER}), userController.Me)
+	userController.router.PUT("/users", userController.AuthorizeUser([]string{auth.ROLE_USER}), userController.UpdateUser)
+	userController.router.GET("chats/:chatId/users", userController.FindUsersByChatId)
+	userController.router.POST("login/users", userController.AuthorizeUser([]string{auth.ROLE_USER}), userController.CreateUser)
 	return &userController
 }
 
 func (controller *UserControllerImpl) GetUserById(c *gin.Context) {
-	userIdParam := c.Param("id")
+	userIdParam := c.Param("userId")
 	id, err := strconv.Atoi(userIdParam)
 	if err != nil {
-		c.Error(errors.NewInvalidNumericParameterInputError())
+		c.Error(errors.InvalidNumericParameterInputError)
 		return
 	}
 	user, err := controller.userService.GetUserById(id)
@@ -47,7 +53,11 @@ func (controller *UserControllerImpl) GetUserById(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	userResponse := userMappings.EntToResponse(user)
+	userResponse, err := userMappings.EntToResponse(user)
+	if err != nil {
+		c.Error(err)
+		return
+	}
 	c.JSON(http.StatusOK, userResponse)
 }
 
@@ -63,7 +73,11 @@ func (controller *UserControllerImpl) GetUsersUsername(c *gin.Context) {
 	}
 	var usersResponse []userMappings.UserResponse
 	for _, user := range users {
-		userResponse := userMappings.EntToResponse(user)
+		userResponse, err := userMappings.EntToResponse(user)
+		if err != nil {
+			c.Error(err)
+			return
+		}
 		usersResponse = append(usersResponse, userResponse)
 	}
 	c.JSON(http.StatusOK, usersResponse)
@@ -78,14 +92,87 @@ func (controller *UserControllerImpl) Me(c *gin.Context) {
 	switch uid := uid.(type) {
 	case string:
 		user, err := controller.userService.GetUserByUid(uid)
-    if err != nil {
+		if err != nil {
 			c.Error(err)
 			return
 		}
-		userResponse := userMappings.EntToResponse(user)
+		userResponse, err := userMappings.EntToResponse(user)
+		if err != nil {
+			c.Error(err)
+			return
+		}
 		c.JSON(http.StatusOK, userResponse)
 	default:
 		c.Error(goError.New("type assertion failure"))
 		return
 	}
+}
+
+func (controller *UserControllerImpl) UpdateUser(c *gin.Context) {
+	uid := c.GetString("uid")
+	user, err := controller.userService.GetUserByUid(uid)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	var userRequest userMappings.UserRequest
+	if err := c.ShouldBindJSON(&userRequest); err != nil {
+		c.Error(err)
+		return
+	}
+	updatedUser, err := controller.userService.UpdateUser(userRequest, user.ID)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+    userResponse, err := userMappings.EntToResponse(updatedUser)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, userResponse)
+}
+
+func (controller *UserControllerImpl) FindUsersByChatId(c *gin.Context) {
+	chatIdParam := c.Param("chatId")
+	chatId, err := strconv.Atoi(chatIdParam)
+	if err != nil {
+		c.Error(errors.InvalidNumericParameterInputError)
+		return
+	}
+	users, err := controller.userService.FindUsersByChatId(chatId)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	var usersResponse []userMappings.UserResponse
+	for _, user := range users {
+		userResponse, err := userMappings.EntToResponse(user)
+		if err != nil {
+			c.Error(err)
+			return
+		}
+		usersResponse = append(usersResponse, userResponse)
+	}
+	c.JSON(http.StatusOK, usersResponse)
+}
+
+func (controller *UserControllerImpl) CreateUser(c *gin.Context) {
+	uid := c.GetString("uid")
+    var userRequest userMappings.UserRequest
+	if err := c.ShouldBindJSON(&userRequest); err != nil {
+		c.Error(err)
+		return
+	}
+	user, err := controller.userService.CreateUser(uid, userRequest)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	userResponse, err := userMappings.EntToResponse(user)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusCreated, userResponse)
 }

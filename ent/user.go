@@ -18,6 +18,8 @@ type User struct {
 	ID int `json:"id,omitempty"`
 	// Bio holds the value of the "bio" field.
 	Bio string `json:"bio,omitempty"`
+	// DisplayPictureURL holds the value of the "display_picture_url" field.
+	DisplayPictureURL string `json:"display_picture_url,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges      UserEdges `json:"edges"`
@@ -87,7 +89,7 @@ func (*User) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case user.FieldID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldBio:
+		case user.FieldBio, user.FieldDisplayPictureURL:
 			values[i] = new(sql.NullString)
 		case user.ForeignKeys[0]: // login_user
 			values[i] = new(sql.NullInt64)
@@ -117,6 +119,12 @@ func (u *User) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field bio", values[i])
 			} else if value.Valid {
 				u.Bio = value.String
+			}
+		case user.FieldDisplayPictureURL:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field display_picture_url", values[i])
+			} else if value.Valid {
+				u.DisplayPictureURL = value.String
 			}
 		case user.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -175,6 +183,9 @@ func (u *User) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", u.ID))
 	builder.WriteString("bio=")
 	builder.WriteString(u.Bio)
+	builder.WriteString(", ")
+	builder.WriteString("display_picture_url=")
+	builder.WriteString(u.DisplayPictureURL)
 	builder.WriteByte(')')
 	return builder.String()
 }

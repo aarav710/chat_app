@@ -15,7 +15,14 @@ import (
 
 	loginController "chatapp/backend/login/controller"
 	loginRepo "chatapp/backend/login/repo"
-  loginService "chatapp/backend/login/service"
+	loginService "chatapp/backend/login/service"
+
+	chatController "chatapp/backend/chats/controller"
+	chatRepo "chatapp/backend/chats/repo"
+	chatService "chatapp/backend/chats/service"
+
+	//messageRepo "chatapp/backend/messages/repo"
+	//messageService "chatapp/backend/messages/service"
 
 	firebase "firebase.google.com/go/v4"
 	"github.com/gin-gonic/gin"
@@ -37,7 +44,7 @@ func main() {
 		log.Fatalf("error initializing app: %v\n", err)
 	}
 	auth, err := app.Auth(ctx)
-  if err != nil {
+	if err != nil {
 		log.Fatalf("error initializing app: %v\n", err)
 	}
 	if err := db.Schema.Create(ctx, migrate.WithDropIndex(true), migrate.WithDropColumn(true)); err != nil {
@@ -45,19 +52,23 @@ func main() {
 	}
 
 	authService := authService.NewAuthService(auth, ctx)
-	
 
 	// INITIALIZING REPOS
 	userRepo := userRepo.NewUserRepo(ctx, db)
-	loginRepo := loginRepo.NewUserRepo(ctx, db)
+	loginRepo := loginRepo.NewLoginRepo(ctx, db)
+	chatRepo := chatRepo.NewChatRepo(db, ctx)
+	//messageRepo := messageRepo.NewMessageRepo(ctx, db)
 
 	// INITIALIZING SERVICES
 
-	userService := userService.NewUserService(userRepo)
-	loginService := loginService.NewUserService(loginRepo, authService)
+	userService := userService.NewUserService(userRepo, loginRepo)
+	loginService := loginService.NewLoginService(loginRepo, authService)
+	chatService := chatService.NewChatService(chatRepo, userRepo)
+	//messageService := messageService.NewMessageService(messageRepo)
 
 	// INITIALIZING CONTROLLERS
 	userController.NewUserController(router, userService, authService)
 	loginController.NewLoginController(router, loginService)
+	chatController.NewChatController(router, chatService, authService, userService)
 	router.Run()
 }

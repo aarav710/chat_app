@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"chatapp/backend/ent/chat"
 	"chatapp/backend/ent/message"
 	"chatapp/backend/ent/predicate"
 	"chatapp/backend/ent/user"
@@ -26,6 +27,7 @@ type MessageQuery struct {
 	predicates []predicate.Message
 	// eager-loading edges.
 	withUser *UserQuery
+	withChat *ChatQuery
 	withFKs  bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -78,6 +80,28 @@ func (mq *MessageQuery) QueryUser() *UserQuery {
 			sqlgraph.From(message.Table, message.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, message.UserTable, message.UserColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryChat chains the current query on the "chat" edge.
+func (mq *MessageQuery) QueryChat() *ChatQuery {
+	query := &ChatQuery{config: mq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := mq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := mq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(message.Table, message.FieldID, selector),
+			sqlgraph.To(chat.Table, chat.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, message.ChatTable, message.ChatColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
 		return fromU, nil
@@ -267,6 +291,7 @@ func (mq *MessageQuery) Clone() *MessageQuery {
 		order:      append([]OrderFunc{}, mq.order...),
 		predicates: append([]predicate.Message{}, mq.predicates...),
 		withUser:   mq.withUser.Clone(),
+		withChat:   mq.withChat.Clone(),
 		// clone intermediate query.
 		sql:    mq.sql.Clone(),
 		path:   mq.path,
@@ -285,6 +310,17 @@ func (mq *MessageQuery) WithUser(opts ...func(*UserQuery)) *MessageQuery {
 	return mq
 }
 
+// WithChat tells the query-builder to eager-load the nodes that are connected to
+// the "chat" edge. The optional arguments are used to configure the query builder of the edge.
+func (mq *MessageQuery) WithChat(opts ...func(*ChatQuery)) *MessageQuery {
+	query := &ChatQuery{config: mq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	mq.withChat = query
+	return mq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -299,7 +335,6 @@ func (mq *MessageQuery) WithUser(opts ...func(*UserQuery)) *MessageQuery {
 //		GroupBy(message.FieldText).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-//
 func (mq *MessageQuery) GroupBy(field string, fields ...string) *MessageGroupBy {
 	grbuild := &MessageGroupBy{config: mq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -326,7 +361,6 @@ func (mq *MessageQuery) GroupBy(field string, fields ...string) *MessageGroupBy 
 //	client.Message.Query().
 //		Select(message.FieldText).
 //		Scan(ctx, &v)
-//
 func (mq *MessageQuery) Select(fields ...string) *MessageSelect {
 	mq.fields = append(mq.fields, fields...)
 	selbuild := &MessageSelect{MessageQuery: mq}
@@ -356,11 +390,12 @@ func (mq *MessageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Mess
 		nodes       = []*Message{}
 		withFKs     = mq.withFKs
 		_spec       = mq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			mq.withUser != nil,
+			mq.withChat != nil,
 		}
 	)
-	if mq.withUser != nil {
+	if mq.withUser != nil || mq.withChat != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -410,6 +445,35 @@ func (mq *MessageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Mess
 			}
 			for i := range nodes {
 				nodes[i].Edges.User = n
+			}
+		}
+	}
+
+	if query := mq.withChat; query != nil {
+		ids := make([]int, 0, len(nodes))
+		nodeids := make(map[int][]*Message)
+		for i := range nodes {
+			if nodes[i].chat_messages == nil {
+				continue
+			}
+			fk := *nodes[i].chat_messages
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
+		}
+		query.Where(chat.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "chat_messages" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.Chat = n
 			}
 		}
 	}

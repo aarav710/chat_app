@@ -81,10 +81,10 @@ func IDLTE(id int) predicate.Chat {
 	})
 }
 
-// GroupName applies equality check predicate on the "group_name" field. It's identical to GroupNameEQ.
-func GroupName(v string) predicate.Chat {
+// Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
+func Title(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldGroupName), v))
+		s.Where(sql.EQ(s.C(FieldTitle), v))
 	})
 }
 
@@ -102,29 +102,29 @@ func Description(v string) predicate.Chat {
 	})
 }
 
-// GroupPhotoURL applies equality check predicate on the "group_photo_url" field. It's identical to GroupPhotoURLEQ.
-func GroupPhotoURL(v string) predicate.Chat {
+// DisplayPictureURL applies equality check predicate on the "display_picture_url" field. It's identical to DisplayPictureURLEQ.
+func DisplayPictureURL(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldGroupPhotoURL), v))
+		s.Where(sql.EQ(s.C(FieldDisplayPictureURL), v))
 	})
 }
 
-// GroupNameEQ applies the EQ predicate on the "group_name" field.
-func GroupNameEQ(v string) predicate.Chat {
+// TitleEQ applies the EQ predicate on the "title" field.
+func TitleEQ(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldGroupName), v))
+		s.Where(sql.EQ(s.C(FieldTitle), v))
 	})
 }
 
-// GroupNameNEQ applies the NEQ predicate on the "group_name" field.
-func GroupNameNEQ(v string) predicate.Chat {
+// TitleNEQ applies the NEQ predicate on the "title" field.
+func TitleNEQ(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldGroupName), v))
+		s.Where(sql.NEQ(s.C(FieldTitle), v))
 	})
 }
 
-// GroupNameIn applies the In predicate on the "group_name" field.
-func GroupNameIn(vs ...string) predicate.Chat {
+// TitleIn applies the In predicate on the "title" field.
+func TitleIn(vs ...string) predicate.Chat {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -136,12 +136,12 @@ func GroupNameIn(vs ...string) predicate.Chat {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.In(s.C(FieldGroupName), v...))
+		s.Where(sql.In(s.C(FieldTitle), v...))
 	})
 }
 
-// GroupNameNotIn applies the NotIn predicate on the "group_name" field.
-func GroupNameNotIn(vs ...string) predicate.Chat {
+// TitleNotIn applies the NotIn predicate on the "title" field.
+func TitleNotIn(vs ...string) predicate.Chat {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -153,70 +153,70 @@ func GroupNameNotIn(vs ...string) predicate.Chat {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.NotIn(s.C(FieldGroupName), v...))
+		s.Where(sql.NotIn(s.C(FieldTitle), v...))
 	})
 }
 
-// GroupNameGT applies the GT predicate on the "group_name" field.
-func GroupNameGT(v string) predicate.Chat {
+// TitleGT applies the GT predicate on the "title" field.
+func TitleGT(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldGroupName), v))
+		s.Where(sql.GT(s.C(FieldTitle), v))
 	})
 }
 
-// GroupNameGTE applies the GTE predicate on the "group_name" field.
-func GroupNameGTE(v string) predicate.Chat {
+// TitleGTE applies the GTE predicate on the "title" field.
+func TitleGTE(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldGroupName), v))
+		s.Where(sql.GTE(s.C(FieldTitle), v))
 	})
 }
 
-// GroupNameLT applies the LT predicate on the "group_name" field.
-func GroupNameLT(v string) predicate.Chat {
+// TitleLT applies the LT predicate on the "title" field.
+func TitleLT(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldGroupName), v))
+		s.Where(sql.LT(s.C(FieldTitle), v))
 	})
 }
 
-// GroupNameLTE applies the LTE predicate on the "group_name" field.
-func GroupNameLTE(v string) predicate.Chat {
+// TitleLTE applies the LTE predicate on the "title" field.
+func TitleLTE(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldGroupName), v))
+		s.Where(sql.LTE(s.C(FieldTitle), v))
 	})
 }
 
-// GroupNameContains applies the Contains predicate on the "group_name" field.
-func GroupNameContains(v string) predicate.Chat {
+// TitleContains applies the Contains predicate on the "title" field.
+func TitleContains(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldGroupName), v))
+		s.Where(sql.Contains(s.C(FieldTitle), v))
 	})
 }
 
-// GroupNameHasPrefix applies the HasPrefix predicate on the "group_name" field.
-func GroupNameHasPrefix(v string) predicate.Chat {
+// TitleHasPrefix applies the HasPrefix predicate on the "title" field.
+func TitleHasPrefix(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldGroupName), v))
+		s.Where(sql.HasPrefix(s.C(FieldTitle), v))
 	})
 }
 
-// GroupNameHasSuffix applies the HasSuffix predicate on the "group_name" field.
-func GroupNameHasSuffix(v string) predicate.Chat {
+// TitleHasSuffix applies the HasSuffix predicate on the "title" field.
+func TitleHasSuffix(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldGroupName), v))
+		s.Where(sql.HasSuffix(s.C(FieldTitle), v))
 	})
 }
 
-// GroupNameEqualFold applies the EqualFold predicate on the "group_name" field.
-func GroupNameEqualFold(v string) predicate.Chat {
+// TitleEqualFold applies the EqualFold predicate on the "title" field.
+func TitleEqualFold(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldGroupName), v))
+		s.Where(sql.EqualFold(s.C(FieldTitle), v))
 	})
 }
 
-// GroupNameContainsFold applies the ContainsFold predicate on the "group_name" field.
-func GroupNameContainsFold(v string) predicate.Chat {
+// TitleContainsFold applies the ContainsFold predicate on the "title" field.
+func TitleContainsFold(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldGroupName), v))
+		s.Where(sql.ContainsFold(s.C(FieldTitle), v))
 	})
 }
 
@@ -407,22 +407,22 @@ func DescriptionContainsFold(v string) predicate.Chat {
 	})
 }
 
-// GroupPhotoURLEQ applies the EQ predicate on the "group_photo_url" field.
-func GroupPhotoURLEQ(v string) predicate.Chat {
+// DisplayPictureURLEQ applies the EQ predicate on the "display_picture_url" field.
+func DisplayPictureURLEQ(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldGroupPhotoURL), v))
+		s.Where(sql.EQ(s.C(FieldDisplayPictureURL), v))
 	})
 }
 
-// GroupPhotoURLNEQ applies the NEQ predicate on the "group_photo_url" field.
-func GroupPhotoURLNEQ(v string) predicate.Chat {
+// DisplayPictureURLNEQ applies the NEQ predicate on the "display_picture_url" field.
+func DisplayPictureURLNEQ(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldGroupPhotoURL), v))
+		s.Where(sql.NEQ(s.C(FieldDisplayPictureURL), v))
 	})
 }
 
-// GroupPhotoURLIn applies the In predicate on the "group_photo_url" field.
-func GroupPhotoURLIn(vs ...string) predicate.Chat {
+// DisplayPictureURLIn applies the In predicate on the "display_picture_url" field.
+func DisplayPictureURLIn(vs ...string) predicate.Chat {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -434,12 +434,12 @@ func GroupPhotoURLIn(vs ...string) predicate.Chat {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.In(s.C(FieldGroupPhotoURL), v...))
+		s.Where(sql.In(s.C(FieldDisplayPictureURL), v...))
 	})
 }
 
-// GroupPhotoURLNotIn applies the NotIn predicate on the "group_photo_url" field.
-func GroupPhotoURLNotIn(vs ...string) predicate.Chat {
+// DisplayPictureURLNotIn applies the NotIn predicate on the "display_picture_url" field.
+func DisplayPictureURLNotIn(vs ...string) predicate.Chat {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -451,70 +451,70 @@ func GroupPhotoURLNotIn(vs ...string) predicate.Chat {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.NotIn(s.C(FieldGroupPhotoURL), v...))
+		s.Where(sql.NotIn(s.C(FieldDisplayPictureURL), v...))
 	})
 }
 
-// GroupPhotoURLGT applies the GT predicate on the "group_photo_url" field.
-func GroupPhotoURLGT(v string) predicate.Chat {
+// DisplayPictureURLGT applies the GT predicate on the "display_picture_url" field.
+func DisplayPictureURLGT(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldGroupPhotoURL), v))
+		s.Where(sql.GT(s.C(FieldDisplayPictureURL), v))
 	})
 }
 
-// GroupPhotoURLGTE applies the GTE predicate on the "group_photo_url" field.
-func GroupPhotoURLGTE(v string) predicate.Chat {
+// DisplayPictureURLGTE applies the GTE predicate on the "display_picture_url" field.
+func DisplayPictureURLGTE(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldGroupPhotoURL), v))
+		s.Where(sql.GTE(s.C(FieldDisplayPictureURL), v))
 	})
 }
 
-// GroupPhotoURLLT applies the LT predicate on the "group_photo_url" field.
-func GroupPhotoURLLT(v string) predicate.Chat {
+// DisplayPictureURLLT applies the LT predicate on the "display_picture_url" field.
+func DisplayPictureURLLT(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldGroupPhotoURL), v))
+		s.Where(sql.LT(s.C(FieldDisplayPictureURL), v))
 	})
 }
 
-// GroupPhotoURLLTE applies the LTE predicate on the "group_photo_url" field.
-func GroupPhotoURLLTE(v string) predicate.Chat {
+// DisplayPictureURLLTE applies the LTE predicate on the "display_picture_url" field.
+func DisplayPictureURLLTE(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldGroupPhotoURL), v))
+		s.Where(sql.LTE(s.C(FieldDisplayPictureURL), v))
 	})
 }
 
-// GroupPhotoURLContains applies the Contains predicate on the "group_photo_url" field.
-func GroupPhotoURLContains(v string) predicate.Chat {
+// DisplayPictureURLContains applies the Contains predicate on the "display_picture_url" field.
+func DisplayPictureURLContains(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldGroupPhotoURL), v))
+		s.Where(sql.Contains(s.C(FieldDisplayPictureURL), v))
 	})
 }
 
-// GroupPhotoURLHasPrefix applies the HasPrefix predicate on the "group_photo_url" field.
-func GroupPhotoURLHasPrefix(v string) predicate.Chat {
+// DisplayPictureURLHasPrefix applies the HasPrefix predicate on the "display_picture_url" field.
+func DisplayPictureURLHasPrefix(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldGroupPhotoURL), v))
+		s.Where(sql.HasPrefix(s.C(FieldDisplayPictureURL), v))
 	})
 }
 
-// GroupPhotoURLHasSuffix applies the HasSuffix predicate on the "group_photo_url" field.
-func GroupPhotoURLHasSuffix(v string) predicate.Chat {
+// DisplayPictureURLHasSuffix applies the HasSuffix predicate on the "display_picture_url" field.
+func DisplayPictureURLHasSuffix(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldGroupPhotoURL), v))
+		s.Where(sql.HasSuffix(s.C(FieldDisplayPictureURL), v))
 	})
 }
 
-// GroupPhotoURLEqualFold applies the EqualFold predicate on the "group_photo_url" field.
-func GroupPhotoURLEqualFold(v string) predicate.Chat {
+// DisplayPictureURLEqualFold applies the EqualFold predicate on the "display_picture_url" field.
+func DisplayPictureURLEqualFold(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldGroupPhotoURL), v))
+		s.Where(sql.EqualFold(s.C(FieldDisplayPictureURL), v))
 	})
 }
 
-// GroupPhotoURLContainsFold applies the ContainsFold predicate on the "group_photo_url" field.
-func GroupPhotoURLContainsFold(v string) predicate.Chat {
+// DisplayPictureURLContainsFold applies the ContainsFold predicate on the "display_picture_url" field.
+func DisplayPictureURLContainsFold(v string) predicate.Chat {
 	return predicate.Chat(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldGroupPhotoURL), v))
+		s.Where(sql.ContainsFold(s.C(FieldDisplayPictureURL), v))
 	})
 }
 
@@ -565,6 +565,34 @@ func HasChatRolesWith(preds ...predicate.ChatRoles) predicate.Chat {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ChatRolesInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, ChatRolesTable, ChatRolesColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasMessages applies the HasEdge predicate on the "messages" edge.
+func HasMessages() predicate.Chat {
+	return predicate.Chat(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(MessagesTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, MessagesTable, MessagesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasMessagesWith applies the HasEdge predicate on the "messages" edge with a given conditions (other predicates).
+func HasMessagesWith(preds ...predicate.Message) predicate.Chat {
+	return predicate.Chat(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(MessagesInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, MessagesTable, MessagesColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

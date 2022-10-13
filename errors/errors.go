@@ -1,17 +1,13 @@
 package errors
 
-// InvalidNumericParameterInputError
-type InvalidNumericParameterInputError struct {
-	message string
-}
+import "errors"
 
-func (err InvalidNumericParameterInputError) Error() string {
-  return err.message
-}
 
-func NewInvalidNumericParameterInputError() error {
-	return InvalidNumericParameterInputError{message: "invalid input parameter type. provide an integer instead"}
-}
+var (
+	UnauthorizedError = errors.New("you are unauthorized to make this request")
+	InvalidNumericParameterInputError = errors.New("invalid input parameter type. provide an integer instead")
+	InternalServerError = errors.New("an internal error has occured in the server")
+)
 
 
 // IncorrectQueryParameterError
@@ -25,17 +21,4 @@ func (err IncorrectQueryParameterError) Error() string {
 
 func NewIncorrectQueryParameterError(message string) error {
 	return IncorrectQueryParameterError{message: message}
-}
-
-// UnauthorizedError
-type UnauthorizedError struct {
-	message string
-}
-
-func (err UnauthorizedError) Error() string {
-  return err.message
-}
-
-func NewUnauthorizedError() error {
-	return IncorrectQueryParameterError{message: "You are unauthorized to make this request."}
 }

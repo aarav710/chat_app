@@ -16,14 +16,14 @@ type Chat struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
-	// GroupName holds the value of the "group_name" field.
-	GroupName string `json:"group_name,omitempty"`
+	// Title holds the value of the "title" field.
+	Title string `json:"title,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
-	// GroupPhotoURL holds the value of the "group_photo_url" field.
-	GroupPhotoURL string `json:"group_photo_url,omitempty"`
+	// DisplayPictureURL holds the value of the "display_picture_url" field.
+	DisplayPictureURL string `json:"display_picture_url,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ChatQuery when eager-loading is set.
 	Edges ChatEdges `json:"edges"`
@@ -35,9 +35,11 @@ type ChatEdges struct {
 	Users []*User `json:"users,omitempty"`
 	// ChatRoles holds the value of the chat_roles edge.
 	ChatRoles []*ChatRoles `json:"chat_roles,omitempty"`
+	// Messages holds the value of the messages edge.
+	Messages []*Message `json:"messages,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // UsersOrErr returns the Users value or an error if the edge
@@ -58,6 +60,15 @@ func (e ChatEdges) ChatRolesOrErr() ([]*ChatRoles, error) {
 	return nil, &NotLoadedError{edge: "chat_roles"}
 }
 
+// MessagesOrErr returns the Messages value or an error if the edge
+// was not loaded in eager-loading.
+func (e ChatEdges) MessagesOrErr() ([]*Message, error) {
+	if e.loadedTypes[2] {
+		return e.Messages, nil
+	}
+	return nil, &NotLoadedError{edge: "messages"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Chat) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
@@ -65,7 +76,7 @@ func (*Chat) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case chat.FieldID:
 			values[i] = new(sql.NullInt64)
-		case chat.FieldGroupName, chat.FieldDescription, chat.FieldGroupPhotoURL:
+		case chat.FieldTitle, chat.FieldDescription, chat.FieldDisplayPictureURL:
 			values[i] = new(sql.NullString)
 		case chat.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -90,11 +101,11 @@ func (c *Chat) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			c.ID = int(value.Int64)
-		case chat.FieldGroupName:
+		case chat.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field group_name", values[i])
+				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
-				c.GroupName = value.String
+				c.Title = value.String
 			}
 		case chat.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -108,11 +119,11 @@ func (c *Chat) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				c.Description = value.String
 			}
-		case chat.FieldGroupPhotoURL:
+		case chat.FieldDisplayPictureURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field group_photo_url", values[i])
+				return fmt.Errorf("unexpected type %T for field display_picture_url", values[i])
 			} else if value.Valid {
-				c.GroupPhotoURL = value.String
+				c.DisplayPictureURL = value.String
 			}
 		}
 	}
@@ -127,6 +138,11 @@ func (c *Chat) QueryUsers() *UserQuery {
 // QueryChatRoles queries the "chat_roles" edge of the Chat entity.
 func (c *Chat) QueryChatRoles() *ChatRolesQuery {
 	return (&ChatClient{config: c.config}).QueryChatRoles(c)
+}
+
+// QueryMessages queries the "messages" edge of the Chat entity.
+func (c *Chat) QueryMessages() *MessageQuery {
+	return (&ChatClient{config: c.config}).QueryMessages(c)
 }
 
 // Update returns a builder for updating this Chat.
@@ -152,8 +168,8 @@ func (c *Chat) String() string {
 	var builder strings.Builder
 	builder.WriteString("Chat(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", c.ID))
-	builder.WriteString("group_name=")
-	builder.WriteString(c.GroupName)
+	builder.WriteString("title=")
+	builder.WriteString(c.Title)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(c.CreatedAt.Format(time.ANSIC))
@@ -161,8 +177,8 @@ func (c *Chat) String() string {
 	builder.WriteString("description=")
 	builder.WriteString(c.Description)
 	builder.WriteString(", ")
-	builder.WriteString("group_photo_url=")
-	builder.WriteString(c.GroupPhotoURL)
+	builder.WriteString("display_picture_url=")
+	builder.WriteString(c.DisplayPictureURL)
 	builder.WriteByte(')')
 	return builder.String()
 }

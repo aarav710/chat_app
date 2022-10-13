@@ -37,6 +37,12 @@ func (uu *UserUpdate) SetBio(s string) *UserUpdate {
 	return uu
 }
 
+// SetDisplayPictureURL sets the "display_picture_url" field.
+func (uu *UserUpdate) SetDisplayPictureURL(s string) *UserUpdate {
+	uu.mutation.SetDisplayPictureURL(s)
+	return uu
+}
+
 // SetLoginID sets the "login" edge to the Login entity by ID.
 func (uu *UserUpdate) SetLoginID(id int) *UserUpdate {
 	uu.mutation.SetLoginID(id)
@@ -260,6 +266,13 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: user.FieldBio,
 		})
 	}
+	if value, ok := uu.mutation.DisplayPictureURL(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldDisplayPictureURL,
+		})
+	}
 	if uu.mutation.LoginCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -479,6 +492,12 @@ type UserUpdateOne struct {
 // SetBio sets the "bio" field.
 func (uuo *UserUpdateOne) SetBio(s string) *UserUpdateOne {
 	uuo.mutation.SetBio(s)
+	return uuo
+}
+
+// SetDisplayPictureURL sets the "display_picture_url" field.
+func (uuo *UserUpdateOne) SetDisplayPictureURL(s string) *UserUpdateOne {
+	uuo.mutation.SetDisplayPictureURL(s)
 	return uuo
 }
 
@@ -733,6 +752,13 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Type:   field.TypeString,
 			Value:  value,
 			Column: user.FieldBio,
+		})
+	}
+	if value, ok := uuo.mutation.DisplayPictureURL(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: user.FieldDisplayPictureURL,
 		})
 	}
 	if uuo.mutation.LoginCleared() {
