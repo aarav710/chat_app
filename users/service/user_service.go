@@ -1,10 +1,14 @@
 package service
 
 import (
+	"chatapp/backend/auth"
 	"chatapp/backend/ent"
 	loginRepo "chatapp/backend/login/repo"
 	userMappings "chatapp/backend/users"
 	"chatapp/backend/users/repo"
+	loginStatus "chatapp/backend/ent/login"
+
+	
 )
 
 type UserService interface {
@@ -19,10 +23,11 @@ type UserService interface {
 type UserServiceImpl struct {
 	userRepo repo.UserRepo
 	loginRepo loginRepo.LoginRepo
+	authService auth.AuthService
 }
 
-func NewUserService(userRepo repo.UserRepo, loginRepo loginRepo.LoginRepo) UserService {
-	userService := UserServiceImpl{userRepo: userRepo, loginRepo: loginRepo}
+func NewUserService(userRepo repo.UserRepo, loginRepo loginRepo.LoginRepo, authService auth.AuthService) UserService {
+	userService := UserServiceImpl{userRepo: userRepo, loginRepo: loginRepo, authService: authService}
 	return &userService
 }
 
@@ -75,5 +80,11 @@ func (service *UserServiceImpl) CreateUser(uid string, userRequest userMappings.
 	if err != nil {
 		return nil, err
 	}
+	login, err = service.loginRepo.UpdateClaim(loginStatus.StatusUSER, login)
+	if err != nil {
+		return nil, err
+	}
+	service.authService.UpdateClaimToValidUser(uid)
+	user.Edges.Login = login
 	return user, err
 }

@@ -2,6 +2,7 @@ package messages
 
 import (
 	"chatapp/backend/ent"
+	"chatapp/backend/errors"
 	userMappings "chatapp/backend/users"
 	"time"
 )
@@ -25,6 +26,9 @@ type MessageResponse struct {
 func EntToResponse(entity *ent.Message) (MessageResponse, error) {
   messageResponse := MessageResponse{}
   messageResponse.Text = entity.Text
+  if entity.Edges.User == nil {
+    return messageResponse, errors.InternalServerError
+  }
   userResponse, err := userMappings.EntToResponse(entity.Edges.User)
   if err != nil {
     return messageResponse, err

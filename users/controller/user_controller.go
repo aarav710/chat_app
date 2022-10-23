@@ -37,7 +37,7 @@ func NewUserController(router *gin.Engine, userService service.UserService, auth
 	userController.router.GET("/users/me", userController.AuthorizeUser([]string{auth.ROLE_USER}), userController.Me)
 	userController.router.PUT("/users", userController.AuthorizeUser([]string{auth.ROLE_USER}), userController.UpdateUser)
 	userController.router.GET("chats/:chatId/users", userController.FindUsersByChatId)
-	userController.router.POST("login/users", userController.AuthorizeUser([]string{auth.ROLE_USER}), userController.CreateUser)
+	userController.router.POST("/completeRegistration", userController.AuthorizeUser([]string{auth.ROLE_USER}), userController.CreateUser)
 	return &userController
 }
 
@@ -176,3 +176,4 @@ func (controller *UserControllerImpl) CreateUser(c *gin.Context) {
 	}
 	c.JSON(http.StatusCreated, userResponse)
 }
+

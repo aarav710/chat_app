@@ -65,8 +65,7 @@ func (repo *UserRepoImpl) UpdateUser(userRequest userMappings.UserRequest, userI
 }
 
 func (repo *UserRepoImpl) CreateUser(userRequest userMappings.UserRequest, login *ent.Login) (*ent.User, error) {
-	user, err := repo.db.User.Create().SetBio(*userRequest.Bio).SetLogin(login).Save(repo.ctx)
-	user.Edges.Login = user.QueryLogin().OnlyX(repo.ctx)
+	user, err := repo.db.User.Create().SetBio(*userRequest.Bio).SetDisplayPictureURL(userRequest.DisplayPictureUrl).SetLogin(login).Save(repo.ctx)
 	return user, err
 }
 

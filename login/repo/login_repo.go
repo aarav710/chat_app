@@ -9,6 +9,7 @@ import (
 type LoginRepo interface {
 	CreateUser(status login.Status, username, email, uid string) (*ent.Login, error)
 	FindLoginByUid(uid string) (*ent.Login, error)
+	UpdateClaim(status login.Status, login *ent.Login) (*ent.Login, error)
 }
 
 type LoginRepoImpl struct {
@@ -28,4 +29,9 @@ func (repo *LoginRepoImpl) CreateUser(status login.Status, username, email, uid 
 func (repo *LoginRepoImpl) FindLoginByUid(uid string) (*ent.Login, error) {
 	login, err := repo.db.Login.Query().Where(login.UID(uid)).Only(repo.ctx)
 	return login, err
+}
+
+func (repo *LoginRepoImpl) UpdateClaim(status login.Status, login *ent.Login) (*ent.Login, error) {
+	updatedLogin, err := login.Update().SetStatus(status).Save(repo.ctx)
+	return updatedLogin, err
 }

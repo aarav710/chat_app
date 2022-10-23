@@ -11,7 +11,7 @@ type AuthService interface {
 	//returns uid
 	VerifyUserIdToken(authToken string) (*string, map[string]interface{}, error)
 	SetUserClaims(uid string, claims map[string]interface{}) error
-	UpdateClaimToValidUser(uid string, claims map[string]interface{}) error
+	UpdateClaimToValidUser(uid string) error
 	CreateUser(username, email, password string) (*auth.UserRecord, error)
 }
 
@@ -49,7 +49,7 @@ func (authService *AuthServiceImpl) SetUserClaims(uid string, claims map[string]
 }
 
 // this function is used to 
-func (authService *AuthServiceImpl) UpdateClaimToValidUser(uid string, claims map[string]interface{}) error {
+func (authService *AuthServiceImpl) UpdateClaimToValidUser(uid string) error {
 	user, err := authService.AuthClient.GetUser(authService.ctx, uid)
 	if err != nil {
 		return err

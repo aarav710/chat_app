@@ -3,6 +3,7 @@ package users
 import (
 	"chatapp/backend/ent"
 	"chatapp/backend/errors"
+	"fmt"
 	"time"
 )
 
@@ -37,6 +38,7 @@ func EntToResponse(entity *ent.User) (UserResponse, error) {
   response.ID = entity.ID
   response.DisplayPictureUrl = entity.DisplayPictureURL
   if entity.Edges.Login == nil {
+    fmt.Println("whoops")
     return response, errors.InternalServerError
   }
   response.Username = entity.Edges.Login.Username

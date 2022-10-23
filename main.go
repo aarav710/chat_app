@@ -61,7 +61,7 @@ func main() {
 
 	// INITIALIZING SERVICES
 
-	userService := userService.NewUserService(userRepo, loginRepo)
+	userService := userService.NewUserService(userRepo, loginRepo, authService)
 	loginService := loginService.NewLoginService(loginRepo, authService)
 	chatService := chatService.NewChatService(chatRepo, userRepo)
 	//messageService := messageService.NewMessageService(messageRepo)
