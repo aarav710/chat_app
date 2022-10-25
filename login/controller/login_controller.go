@@ -37,3 +37,5 @@ func (controller *LoginControllerImpl) Register(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"username": login.Username, "email": login.Email, "id": login.ID})
 }
+
+
