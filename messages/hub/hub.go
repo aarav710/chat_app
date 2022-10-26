@@ -1,17 +1,19 @@
-package messages
+package hub
 
 import (
 	"chatapp/backend/ent"
-    "chatapp/backend/messages/service"
 	"chatapp/backend/messages"
+	"chatapp/backend/messages/service"
 )
 
 type HubImpl struct {
-	Broadcast chan messages.MessageRequest
+	Broadcast chan *ent.Message
     Register chan *ent.User
 	Unregister chan int
     messageService service.MessageService
+	Clients map[*Client]*ent.User
 }
+
 
 type Hub interface {
 	BroadcastMessage(message messages.MessageRequest, chatId int, user *ent.User) (*ent.Message, error)
@@ -20,7 +22,7 @@ type Hub interface {
 }
 
 func NewHub(messageService service.MessageService) Hub {
-	hub := HubImpl{messageService: messageService}
+	hub := HubImpl{messageService: messageService, Broadcast: make(chan *ent.Message), Register: make(chan *ent.User), Unregister: make(chan int)}
 	return &hub
 }
 
