@@ -4,7 +4,6 @@ import (
 	"chatapp/backend/errors"
 	userMappings "chatapp/backend/users"
 	"chatapp/backend/users/service"
-	goError "errors"
 	"net/http"
 	"strconv"
 
@@ -84,28 +83,20 @@ func (controller *UserControllerImpl) GetUsersUsername(c *gin.Context) {
 }
 
 func (controller *UserControllerImpl) Me(c *gin.Context) {
-	uid, uidExists := c.Get("uid")
-	if !uidExists {
-		c.Error(goError.New("unexpected failure"))
+	uid := c.GetString("uid")
+
+	user, err := controller.userService.GetUserByUid(uid)
+	if err != nil {
+		c.Error(err)
 		return
 	}
-	switch uid := uid.(type) {
-	case string:
-		user, err := controller.userService.GetUserByUid(uid)
-		if err != nil {
-			c.Error(err)
-			return
-		}
-		userResponse, err := userMappings.EntToResponse(user)
-		if err != nil {
-			c.Error(err)
-			return
-		}
-		c.JSON(http.StatusOK, userResponse)
-	default:
-		c.Error(goError.New("type assertion failure"))
+	userResponse, err := userMappings.EntToResponse(user)
+	if err != nil {
+		c.Error(err)
 		return
 	}
+	c.JSON(http.StatusOK, userResponse)
+
 }
 
 func (controller *UserControllerImpl) UpdateUser(c *gin.Context) {
@@ -125,7 +116,7 @@ func (controller *UserControllerImpl) UpdateUser(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-    userResponse, err := userMappings.EntToResponse(updatedUser)
+	userResponse, err := userMappings.EntToResponse(updatedUser)
 	if err != nil {
 		c.Error(err)
 		return
@@ -159,7 +150,7 @@ func (controller *UserControllerImpl) FindUsersByChatId(c *gin.Context) {
 
 func (controller *UserControllerImpl) CreateUser(c *gin.Context) {
 	uid := c.GetString("uid")
-    var userRequest userMappings.UserRequest
+	var userRequest userMappings.UserRequest
 	if err := c.ShouldBindJSON(&userRequest); err != nil {
 		c.Error(err)
 		return
@@ -176,4 +167,3 @@ func (controller *UserControllerImpl) CreateUser(c *gin.Context) {
 	}
 	c.JSON(http.StatusCreated, userResponse)
 }
-

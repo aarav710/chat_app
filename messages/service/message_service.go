@@ -10,7 +10,7 @@ import (
 )
 
 type MessageService interface {
-    FindMessagesByChatId(chatId, cursor int) ([]*ent.Message, error)
+    FindMessagesByChatId(uid string, chatId, cursor int) ([]*ent.Message, error)
 	CreateMessage(messageRequest messages.MessageRequest, chatId int, user *ent.User) (*ent.Message, error)
 }
 
@@ -27,7 +27,18 @@ func NewMessageService(messageRepo repo.MessageRepo, chatRepo chatRepo.ChatRepo,
 
 // cursor is an integer (taken from the controller's request parameter) that tracks the state of the pages that have been loaded from the infite scroll 
 // cursor >= 1
-func (service *MessageServiceImpl) FindMessagesByChatId(chatId, cursor int) ([]*ent.Message, error) {
+func (service *MessageServiceImpl) FindMessagesByChatId(uid string, chatId, cursor int) ([]*ent.Message, error) {
+	user, err := service.userRepo.GetUserByUid(uid)
+	if err != nil {
+		return nil, err
+	}
+	isUserInChat, err := service.userRepo.IsUserInChat(user.ID, chatId)
+	if err != nil {
+		return nil, err
+	}
+	if !isUserInChat {
+		return nil, errors.UnauthorizedError
+	}
 	messagesCount, err := service.messageRepo.CountMessagesByChatId(chatId)
     if err != nil {
 		return nil, err

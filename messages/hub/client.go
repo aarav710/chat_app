@@ -2,6 +2,7 @@ package hub
 
 import (
 	"time"
+	"chatapp/backend/messages"
 
 	"github.com/gorilla/websocket"
 )
@@ -33,6 +34,6 @@ type Client struct {
 	conn *websocket.Conn
 
 	// Buffered channel of outbound messages.
-	send chan []byte
+	send chan messages.MessageResponse
 }
 
