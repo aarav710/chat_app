@@ -48,18 +48,19 @@ func (controller *MessageControllerImpl) GetMessagesByChatId(c *gin.Context) {
 		c.Error(err)
 	}
 	var messagesResponse []messageMappings.MessageResponse
-	var entityToResponse error
+	var entityToResponseErr error
 	for _, message := range messages {
 		messageResponse, err := messageMappings.EntToResponse(message)
 		if err != nil {
-            entityToResponse = err
+            entityToResponseErr = err
 			break
 		}
 		messagesResponse = append(messagesResponse, messageResponse)
 	}
-	if entityToResponse != nil {
+	if entityToResponseErr != nil {
 		c.Error(err)
 		return
 	}
     c.JSON(http.StatusOK, messagesResponse)
 }
+

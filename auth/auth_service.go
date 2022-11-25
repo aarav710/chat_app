@@ -10,9 +10,11 @@ import (
 type AuthService interface {
 	//returns uid
 	VerifyUserIdToken(authToken string) (*string, map[string]interface{}, error)
+	
 	SetUserClaims(uid string, claims map[string]interface{}) error
 	UpdateClaimToValidUser(uid string) error
 	CreateUser(username, email, password string) (*auth.UserRecord, error)
+	CreateAuthToken(uid string) (string, error)
 }
 
 type AuthServiceImpl struct {
@@ -58,4 +60,12 @@ func (authService *AuthServiceImpl) UpdateClaimToValidUser(uid string) error {
 	claim["status"] = login.StatusUSER.String()
 	err = authService.AuthClient.SetCustomUserClaims(authService.ctx, uid, claim)
 	return err
+}
+
+func (authService *AuthServiceImpl) CreateAuthToken(uid string) (string, error) {
+	token, err := authService.AuthClient.CustomToken(authService.ctx, uid)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
 }

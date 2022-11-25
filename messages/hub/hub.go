@@ -22,7 +22,7 @@ type Hub interface {
 }
 
 func NewHub(messageService service.MessageService) Hub {
-	hub := HubImpl{messageService: messageService, Broadcast: make(chan *ent.Message), Register: make(chan *ent.User), Unregister: make(chan int)}
+	hub := HubImpl{messageService: messageService, Broadcast: make(chan *ent.Message), Register: make(chan *ent.User), Unregister: make(chan int), Clients: make(map[*Client]*ent.User)}
 	return &hub
 }
 
@@ -31,7 +31,7 @@ func (hub *HubImpl) BroadcastMessage(messageRequest messages.MessageRequest, cha
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return message, nil
 }
 
