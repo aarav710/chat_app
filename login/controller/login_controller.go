@@ -30,12 +30,12 @@ func (controller *LoginControllerImpl) Register(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	login, err := controller.loginService.CreateUserLogin(register.Password, register.Username, register.Email)
+	jwt, err := controller.loginService.CreateUserLogin(register.Password, register.Username, register.Email)
 	if err != nil {
 		c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"username": login.Username, "email": login.Email, "id": login.ID})
+	c.JSON(http.StatusOK, gin.H{"token": jwt})
 }
 
 

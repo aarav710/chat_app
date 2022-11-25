@@ -2,13 +2,12 @@ package service
 
 import (
 	"chatapp/backend/auth"
-	"chatapp/backend/ent"
 	"chatapp/backend/ent/login"
 	"chatapp/backend/login/repo"
 )
 
 type LoginService interface {
-	CreateUserLogin(password, username, email string) (*ent.Login, error)
+	CreateUserLogin(password, username, email string) (string, error)
 }
 
 type LoginServiceImpl struct {
@@ -21,10 +20,10 @@ func NewLoginService(loginRepo repo.LoginRepo, authService auth.AuthService) Log
 	return &LoginService
 }
 
-func (service *LoginServiceImpl) CreateUserLogin(password, username, email string) (*ent.Login, error) {
+func (service *LoginServiceImpl) CreateUserLogin(password, username, email string) (string, error) {
 	userRecord, err := service.authService.CreateUser(username, email, password)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	setUserClaimsErr := make(chan error)
 
@@ -37,13 +36,16 @@ func (service *LoginServiceImpl) CreateUserLogin(password, username, email strin
 
 	login, err := service.loginRepo.CreateUser(login.StatusINCOMPLETE_REGISTRATION, userRecord.DisplayName, userRecord.Email, userRecord.UID)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	err = <- setUserClaimsErr
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	
-	return login, err
+	jwt, err := service.authService.CreateAuthToken(login.UID)
+	if err != nil {
+		return "", err
+	}
+	return jwt, err
 }
