@@ -23,7 +23,7 @@ type ChatService interface {
 	DeleteChat(user *ent.User, chatId int) error
 }
 
-func NewChatService(chatRepo repo.ChatRepo, userRepo userRepo.UserRepo) ChatService {
+func NewChatService(chatRepo repo.ChatRepo, userRepo userRepo.UserRepo) *ChatServiceImpl {
 	chatService := ChatServiceImpl{chatRepo: chatRepo, userRepo: userRepo}
 	return &chatService
 }

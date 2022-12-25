@@ -17,7 +17,7 @@ type LoginRepoImpl struct {
 	db  *ent.Client
 }
 
-func NewLoginRepo(ctx context.Context, db *ent.Client) LoginRepo {
+func NewLoginRepo(ctx context.Context, db *ent.Client) *LoginRepoImpl {
 	return &LoginRepoImpl{ctx: ctx, db: db}
 }
 

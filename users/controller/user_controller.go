@@ -28,7 +28,7 @@ type UserControllerImpl struct {
 	authenticationController.AuthenticationController
 }
 
-func NewUserController(router *gin.Engine, userService service.UserService, authService auth.AuthService) UserController {
+func NewUserController(router *gin.Engine, userService service.UserService, authService auth.AuthService) *UserControllerImpl {
 	authenticationController := authenticationController.NewAuthenticationController(router, authService)
 	userController := UserControllerImpl{router: router, userService: userService, AuthenticationController: authenticationController}
 	userController.router.GET("/users/:userId", userController.AuthorizeUser([]string{auth.ROLE_USER}), userController.GetUserById)

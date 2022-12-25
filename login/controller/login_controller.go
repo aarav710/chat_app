@@ -18,7 +18,7 @@ type LoginControllerImpl struct {
 	loginService service.LoginService
 }
 
-func NewLoginController(router *gin.Engine, loginService service.LoginService) LoginController {
+func NewLoginController(router *gin.Engine, loginService service.LoginService) *LoginControllerImpl {
 	loginController := LoginControllerImpl{router: router, loginService: loginService}
 	loginController.router.POST("/register", loginController.Register)
 	return &loginController

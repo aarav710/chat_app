@@ -29,7 +29,7 @@ type UserRepoImpl struct {
 	db *ent.Client
 }
 
-func NewUserRepo(ctx context.Context, db *ent.Client) UserRepo {
+func NewUserRepo(ctx context.Context, db *ent.Client) *UserRepoImpl {
 	return &UserRepoImpl{ctx: ctx, db: db}
 }
 

@@ -33,7 +33,7 @@ type ChatController interface {
   RemoveUserFromChat(c *gin.Context)
 }
 
-func NewChatController(router *gin.Engine, chatService service.ChatService, authService auth.AuthService, userService userService.UserService) ChatController {
+func NewChatController(router *gin.Engine, chatService service.ChatService, authService auth.AuthService, userService userService.UserService) *ChatControllerImpl {
 	authenticationController := authenticationController.NewAuthenticationController(router, authService)
 	chatController := ChatControllerImpl{chatService: chatService, router: router, AuthenticationController: authenticationController, userService: userService}
 	chatController.router.GET("/users/:userId/chats", chatController.AuthorizeUser([]string{auth.ROLE_USER}), chatController.FindChatsByUser)

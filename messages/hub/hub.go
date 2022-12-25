@@ -7,8 +7,8 @@ import (
 
 type HubImpl struct {
 	Broadcast chan MessageBroadcast
-    Register chan *ent.User
-	Unregister chan int
+    Register chan UserBroadcast
+	Unregister chan *Client
 	userService userService.UserService
 	Clients map[*Client]*ent.User
 }
@@ -16,6 +16,11 @@ type HubImpl struct {
 type MessageBroadcast struct {
 	message *ent.Message
 	clients []*Client
+}
+
+type UserBroadcast struct {
+	Client *Client
+	User *ent.User
 }
 
 type Hub interface {
@@ -28,8 +33,8 @@ func NewHub(userService userService.UserService) Hub {
 	hub := HubImpl{ 
 		userService: userService,
 		Broadcast: make(chan MessageBroadcast), 
-		Register: make(chan *ent.User), 
-		Unregister: make(chan int), 
+		Register: make(chan UserBroadcast), 
+		Unregister: make(chan *Client), 
 		Clients: make(map[*Client]*ent.User),
 	}
 	return &hub

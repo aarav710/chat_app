@@ -26,7 +26,7 @@ type UserServiceImpl struct {
 	authService auth.AuthService
 }
 
-func NewUserService(userRepo repo.UserRepo, loginRepo loginRepo.LoginRepo, authService auth.AuthService) UserService {
+func NewUserService(userRepo repo.UserRepo, loginRepo loginRepo.LoginRepo, authService auth.AuthService) *UserServiceImpl {
 	userService := UserServiceImpl{userRepo: userRepo, loginRepo: loginRepo, authService: authService}
 	return &userService
 }

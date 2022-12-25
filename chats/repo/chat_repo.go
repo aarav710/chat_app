@@ -22,7 +22,7 @@ type ChatRepo interface {
 	DeleteChat(chatId int) error
 }
 
-func NewChatRepo(db *ent.Client, ctx context.Context) ChatRepo {
+func NewChatRepo(db *ent.Client, ctx context.Context) *ChatRepoImpl {
 	chatRepo := ChatRepoImpl{db: db, ctx: ctx}
     return &chatRepo
 }

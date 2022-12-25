@@ -15,7 +15,7 @@ type LoginServiceImpl struct {
 	authService auth.AuthService
 }
 
-func NewLoginService(loginRepo repo.LoginRepo, authService auth.AuthService) LoginService {
+func NewLoginService(loginRepo repo.LoginRepo, authService auth.AuthService) *LoginServiceImpl {
 	LoginService := LoginServiceImpl{loginRepo: loginRepo, authService: authService}
 	return &LoginService
 }
