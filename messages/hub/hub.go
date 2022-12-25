@@ -2,37 +2,55 @@ package hub
 
 import (
 	"chatapp/backend/ent"
-	"chatapp/backend/messages"
-	"chatapp/backend/messages/service"
+	userService "chatapp/backend/users/service"
 )
 
 type HubImpl struct {
-	Broadcast chan *ent.Message
+	Broadcast chan MessageBroadcast
     Register chan *ent.User
 	Unregister chan int
-    messageService service.MessageService
+	userService userService.UserService
 	Clients map[*Client]*ent.User
 }
 
+type MessageBroadcast struct {
+	message *ent.Message
+	clients []*Client
+}
 
 type Hub interface {
-	BroadcastMessage(message messages.MessageRequest, chatId int, user *ent.User) (*ent.Message, error)
+	BroadcastMessage(message *ent.Message, chatId int, user *ent.User) (*ent.Message, error)
 	UserJoin(user *ent.User) error
 	UserUnregister(uid string) error
 }
 
-func NewHub(messageService service.MessageService) Hub {
-	hub := HubImpl{messageService: messageService, Broadcast: make(chan *ent.Message), Register: make(chan *ent.User), Unregister: make(chan int), Clients: make(map[*Client]*ent.User)}
+func NewHub(userService userService.UserService) Hub {
+	hub := HubImpl{ 
+		userService: userService,
+		Broadcast: make(chan MessageBroadcast), 
+		Register: make(chan *ent.User), 
+		Unregister: make(chan int), 
+		Clients: make(map[*Client]*ent.User),
+	}
 	return &hub
 }
 
-func (hub *HubImpl) BroadcastMessage(messageRequest messages.MessageRequest, chatId int, user *ent.User) (*ent.Message, error) {
-	message, err := hub.messageService.CreateMessage(messageRequest, chatId, user)
+func (hub *HubImpl) BroadcastMessage(message *ent.Message, chatId int, user *ent.User) (*ent.Message, error) {
+	users, err := hub.userService.FindUsersByChatId(chatId)
 	if err != nil {
 		return nil, err
 	}
-
-	return message, nil
+	var clients []*Client
+	for _, user := range users {
+		for client, online_user := range hub.Clients {
+			if user.ID == online_user.ID {
+				clients = append(clients, client)
+			}
+		}
+	}
+	messageBroadcast := MessageBroadcast{clients: clients, message: message}
+	hub.Broadcast <- messageBroadcast
+	return nil, nil
 }
 
 func (hub *HubImpl) UserJoin(user *ent.User) error {
