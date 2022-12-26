@@ -1,6 +1,7 @@
 package hub
 
 import (
+	"chatapp/backend/ent"
 	"chatapp/backend/messages"
 	"net/http"
 	"time"
@@ -39,11 +40,13 @@ type Client struct {
 }
 
 
-func ServeWebSocketRequests(hub Hub, w http.ResponseWriter, r *http.Request) {
-	/*
+func ServeWebSocketRequests(hub Hub, w http.ResponseWriter, r *http.Request, user *ent.User) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return
 	}
-*/
+	client := Client{hub: hub, conn: conn, send: make(chan messages.MessageResponse)}
+	userBroadcast := UserBroadcast{Client: &client, user: user}
+	hub.UserJoin(userBroadcast)
+	
 }

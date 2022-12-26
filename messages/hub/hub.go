@@ -23,12 +23,12 @@ type MessageBroadcast struct {
 
 type UserBroadcast struct {
 	Client *Client
-	id int
+	user *ent.User
 }
 
 type Hub interface {
 	BroadcastMessage(messageRequest messageMappings.MessageRequest) (messageMappings.MessageResponse, error)
-	UserJoin(user *ent.User) error
+	UserJoin(UserBroadcast UserBroadcast) error
 	UserUnregister(uid string) error
 	Start()
 }
@@ -54,11 +54,7 @@ func (hub *HubImpl) Start() {
 				panic("")
 			}
 		case userMessReq := <- hub.Register:
-			user, err := hub.userService.GetUserById(userMessReq.id)
-			if err != nil {
-				
-			}
-			hub.Clients[userMessReq.Client] = user
+			hub.Clients[userMessReq.Client] = userMessReq.user
 		case client := <- hub.Unregister:
 			if _, ok := hub.Clients[client]; ok {
 				delete(hub.Clients, client)
@@ -92,7 +88,8 @@ func (hub *HubImpl) BroadcastMessage(messageRequest messageMappings.MessageReque
 	return messageResponse, nil
 }
 
-func (hub *HubImpl) UserJoin(user *ent.User) error {
+func (hub *HubImpl) UserJoin(userBroadcast UserBroadcast) error {
+	hub.Register <- userBroadcast
 	return nil
 }
 

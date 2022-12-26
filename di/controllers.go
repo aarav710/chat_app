@@ -10,12 +10,12 @@ import (
 
 type Controllers struct {
 	chatController chatController.ChatController
-	userController userController.UserController
+	UserController userController.UserController
 	messageController messageController.MessageController
 	loginController loginController.LoginController
 	Hub hub.Hub
 }
 
 func NewControllers(chatController chatController.ChatController, userController userController.UserController, messageController messageController.MessageController, loginController loginController.LoginController, hub hub.Hub) Controllers {
-	return Controllers{chatController: chatController, userController: userController, messageController: messageController, loginController: loginController, Hub: hub}
+	return Controllers{chatController: chatController, UserController: userController, messageController: messageController, loginController: loginController, Hub: hub}
 }

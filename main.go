@@ -2,7 +2,9 @@ package main
 
 import (
 	"chatapp/backend/db"
+	"chatapp/backend/ent"
 	"chatapp/backend/ent/migrate"
+
 	//"chatapp/backend/messages/hub"
 	messagesHub "chatapp/backend/messages/hub"
 	"chatapp/backend/middleware"
@@ -40,7 +42,8 @@ func main() {
 
 	controllers := InitializeDI(ctx, router, db, auth)
 	router.GET("/chats/ws", func (c *gin.Context) {
-		messagesHub.ServeWebSocketRequests(controllers.Hub, c.Writer, c.Request)
+		// add user authentication for this endpoint over here
+		messagesHub.ServeWebSocketRequests(controllers.Hub, c.Writer, c.Request, &ent.User{})
 	})
 	router.Run()
 }
