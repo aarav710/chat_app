@@ -17,11 +17,11 @@ type UserBase struct {
 }
 
 type UserResponse struct {
-  ID int
+  ID int `json:"id"`
   Username string `json:"username"`
 	UserBase
-  CreatedAt time.Time
-  Status string
+  CreatedAt time.Time `json:"created_at"`
+  Status string `json:"status"`
 }
 
 func RequestToEnt(request UserRequest) *ent.User {

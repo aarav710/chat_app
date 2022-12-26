@@ -1,8 +1,9 @@
 package hub
 
 import (
-	"time"
 	"chatapp/backend/messages"
+	"net/http"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -37,3 +38,12 @@ type Client struct {
 	send chan messages.MessageResponse
 }
 
+
+func ServeWebSocketRequests(hub Hub, w http.ResponseWriter, r *http.Request) {
+	/*
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		return
+	}
+*/
+}

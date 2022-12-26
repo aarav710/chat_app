@@ -48,9 +48,19 @@ func NewChatController(router *gin.Engine, chatService service.ChatService, auth
 
 func (controller *ChatControllerImpl) FindChatsByUser(c *gin.Context) {
 	uid := c.GetString("uid")
+	userIdParam := c.Param("userId")
+	userId, err := strconv.Atoi(userIdParam)
+	if err != nil {
+		c.Error(errors.InvalidNumericParameterInputError)
+		return
+	}
     user, err := controller.userService.GetUserByUid(uid)
 	if err != nil {
 		c.Error(err)
+		return
+	}
+	if user.ID != userId {
+		c.Error(errors.UnauthorizedError)
 		return
 	}
 	chats, err := controller.chatService.FindChatsByUserId(user.ID)
@@ -58,7 +68,7 @@ func (controller *ChatControllerImpl) FindChatsByUser(c *gin.Context) {
 		c.Error(err)
 		return 
 	}
-    var chatsResponse []chatMappings.ChatResponse
+    chatsResponse := make([]chatMappings.ChatResponse, 0)
 	for _, chat := range chats {
 		chatResponse := chatMappings.EntToChatResponse(chat)
 		chatsResponse = append(chatsResponse, chatResponse)

@@ -7,23 +7,21 @@ import (
 	"chatapp/backend/messages"
 	"chatapp/backend/messages/repo"
 	userRepo "chatapp/backend/users/repo"
-	"chatapp/backend/messages/hub"
 )
 
 type MessageService interface {
     FindMessagesByChatId(uid string, chatId, cursor int) ([]*ent.Message, error)
-	CreateMessage(messageRequest messages.MessageRequest, chatId int, uid string) (*ent.Message, error)
+	CreateMessage(messageRequest messages.MessageRequest) (*ent.Message, error)
 }
 
 type MessageServiceImpl struct {
 	messageRepo repo.MessageRepo
 	chatRepo chatRepo.ChatRepo
 	userRepo userRepo.UserRepo
-	hub  hub.Hub
 }
 
-func NewMessageService(messageRepo repo.MessageRepo, chatRepo chatRepo.ChatRepo, userRepo userRepo.UserRepo, hub hub.Hub) MessageService {
-	messageService := MessageServiceImpl{messageRepo: messageRepo, chatRepo: chatRepo, userRepo: userRepo, hub: hub}
+func NewMessageService(messageRepo repo.MessageRepo, chatRepo chatRepo.ChatRepo, userRepo userRepo.UserRepo) *MessageServiceImpl {
+	messageService := MessageServiceImpl{messageRepo: messageRepo, chatRepo: chatRepo, userRepo: userRepo}
 	return &messageService
 }
 
@@ -50,23 +48,19 @@ func (service *MessageServiceImpl) FindMessagesByChatId(uid string, chatId, curs
 	return messages, err
 }
 
-func (service *MessageServiceImpl) CreateMessage(messageRequest messages.MessageRequest, chatId int, uid string) (*ent.Message, error) {
-	user, err := service.userRepo.GetUserByUid(uid)
+func (service *MessageServiceImpl) CreateMessage(messageRequest messages.MessageRequest) (*ent.Message, error) {
+	user, err := service.userRepo.GetUserById(messageRequest.SenderId)
 	if err != nil {
 		return nil, err
 	}
-	isUserInChat, err := service.userRepo.IsUserInChat(user.ID, chatId)
+	isUserInChat, err := service.userRepo.IsUserInChat(messageRequest.SenderId, messageRequest.ChatId)
 	if err != nil {
 		return nil, err
 	}
 	if !isUserInChat {
 		return nil, errors.UnauthorizedError
 	}
-	message, err := service.messageRepo.CreateMessage(messageRequest, user.ID, chatId)
-	if err != nil {
-		return nil, err
-	}
-	message, err = service.hub.BroadcastMessage(message, chatId, user)
+	message, err := service.messageRepo.CreateMessage(messageRequest)
 	if err != nil {
 		return nil, err
 	}

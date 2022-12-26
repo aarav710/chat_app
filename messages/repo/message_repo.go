@@ -15,10 +15,10 @@ type MessageRepoImpl struct {
 type MessageRepo interface {
 	FindMessagesByChatId(offset, limit, chatId int) ([]*ent.Message, error)
     CountMessagesByChatId(chatId int) (int, error)
-	CreateMessage(messageRequest messageMappings.MessageRequest, userId, chatId int) (*ent.Message, error)
+	CreateMessage(messageRequest messageMappings.MessageRequest) (*ent.Message, error)
 }
 
-func NewMessageRepo(ctx context.Context, db *ent.Client) MessageRepo {
+func NewMessageRepo(ctx context.Context, db *ent.Client) *MessageRepoImpl {
 	messageRepo := MessageRepoImpl{ctx: ctx, db: db}
 	return &messageRepo
 }
@@ -37,10 +37,10 @@ func (repo *MessageRepoImpl) CountMessagesByChatId(chatId int) (int, error) {
 	return messagesCount, err
 }
 
-func (repo *MessageRepoImpl) CreateMessage(messageRequest messageMappings.MessageRequest, userId, chatId int) (*ent.Message, error) {
+func (repo *MessageRepoImpl) CreateMessage(messageRequest messageMappings.MessageRequest) (*ent.Message, error) {
 	message, err := repo.db.Message.Create().
-	                                        SetChatID(chatId).
-	                                        SetUserID(userId).
+	                                        SetChatID(messageRequest.ChatId).
+	                                        SetUserID(messageRequest.SenderId).
 	                                        SetText(messageRequest.Text).
 	                                        Save(repo.ctx)
 	return message, err

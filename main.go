@@ -1,14 +1,14 @@
 package main
 
 import (
-	
 	"chatapp/backend/db"
 	"chatapp/backend/ent/migrate"
+	//"chatapp/backend/messages/hub"
+	messagesHub "chatapp/backend/messages/hub"
 	"chatapp/backend/middleware"
-	
+
 	"context"
 	"log"
-
 
 	firebase "firebase.google.com/go/v4"
 	"github.com/gin-gonic/gin"
@@ -37,7 +37,11 @@ func main() {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 
-	InitializeDI(ctx, router, db, auth)
+
+	controllers := InitializeDI(ctx, router, db, auth)
+	router.GET("/chats/ws", func (c *gin.Context) {
+		messagesHub.ServeWebSocketRequests(controllers.Hub, c.Writer, c.Request)
+	})
 	router.Run()
 }
 

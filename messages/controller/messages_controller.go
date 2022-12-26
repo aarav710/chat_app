@@ -15,7 +15,7 @@ import (
 
 type MessageController interface {
 	GetMessagesByChatId(c *gin.Context)
-	CreateMessage(c *gin.Context)
+	//CreateMessage(c *gin.Context)
 }
 
 type MessageControllerImpl struct {
@@ -26,11 +26,11 @@ type MessageControllerImpl struct {
 	hub  hub.Hub
 }
 
-func NewMessageController(router *gin.Engine, messageService service.MessageService, authService auth.AuthService, hub hub.Hub, userService userService.UserService) MessageController {
+func NewMessageController(router *gin.Engine, messageService service.MessageService, authService auth.AuthService, hub hub.Hub, userService userService.UserService) *MessageControllerImpl {
 	authenticationController := authenticationController.NewAuthenticationController(router, authService)
 	messageController := MessageControllerImpl{router: router, messageService: messageService, AuthenticationController: authenticationController, hub: hub, userService: userService}
 	messageController.router.GET("/chats/:chatId/messages", messageController.AuthorizeUser([]string{auth.ROLE_USER}), messageController.GetMessagesByChatId)
-	messageController.router.POST("/chats/:chatId/messages", messageController.AuthorizeUser([]string{auth.ROLE_USER}), messageController.CreateMessage)
+	//messageController.router.POST("/chats/:chatId/messages", messageController.AuthorizeUser([]string{auth.ROLE_USER}), messageController.CreateMessage)
 	return &messageController
 }
 
@@ -52,7 +52,7 @@ func (controller *MessageControllerImpl) GetMessagesByChatId(c *gin.Context) {
 	if err != nil {
 		c.Error(err)
 	}
-	var messagesResponse []messageMappings.MessageResponse
+	messagesResponse := make([]messageMappings.MessageResponse, 0)
 	var entityToResponseErr error
 	for _, message := range messages {
 		messageResponse, err := messageMappings.EntToResponse(message)
@@ -69,6 +69,7 @@ func (controller *MessageControllerImpl) GetMessagesByChatId(c *gin.Context) {
     c.JSON(http.StatusOK, messagesResponse)
 }
 
+/*
 func (controller *MessageControllerImpl) CreateMessage(c *gin.Context) {
 	uid := c.GetString("uid")
 	chatIdParam := c.Param("chatId")
@@ -82,7 +83,7 @@ func (controller *MessageControllerImpl) CreateMessage(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	message, err := controller.messageService.CreateMessage(messageRequest, chatId, uid)
+	message, err := controller.messageService.CreateMessage(messageRequest)
 	if err != nil {
 		c.Error(err)
 	}
@@ -92,3 +93,4 @@ func (controller *MessageControllerImpl) CreateMessage(c *gin.Context) {
 	}
 	c.JSON(http.StatusCreated, messageResponse)
 }
+*/

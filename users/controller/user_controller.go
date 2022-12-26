@@ -70,7 +70,7 @@ func (controller *UserControllerImpl) GetUsersUsername(c *gin.Context) {
 	if err != nil {
 		c.Error(err)
 	}
-	var usersResponse []userMappings.UserResponse
+	usersResponse := make([]userMappings.UserResponse, 0)
 	for _, user := range users {
 		userResponse, err := userMappings.EntToResponse(user)
 		if err != nil {
@@ -136,7 +136,7 @@ func (controller *UserControllerImpl) FindUsersByChatId(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	var usersResponse []userMappings.UserResponse
+	usersResponse := make([]userMappings.UserResponse, 0)
 	for _, user := range users {
 		userResponse, err := userMappings.EntToResponse(user)
 		if err != nil {

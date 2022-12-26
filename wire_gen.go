@@ -13,7 +13,13 @@ import (
 	"chatapp/backend/chats/service"
 	"chatapp/backend/di"
 	"chatapp/backend/ent"
+	controller4 "chatapp/backend/login/controller"
 	repo3 "chatapp/backend/login/repo"
+	service4 "chatapp/backend/login/service"
+	controller3 "chatapp/backend/messages/controller"
+	"chatapp/backend/messages/hub"
+	repo4 "chatapp/backend/messages/repo"
+	service3 "chatapp/backend/messages/service"
 	controller2 "chatapp/backend/users/controller"
 	repo2 "chatapp/backend/users/repo"
 	service2 "chatapp/backend/users/service"
@@ -33,6 +39,12 @@ func InitializeDI(context2 context.Context, router *gin.Engine, db *ent.Client, 
 	userServiceImpl := service2.NewUserService(userRepoImpl, loginRepoImpl, authService)
 	chatControllerImpl := controller.NewChatController(router, chatServiceImpl, authService, userServiceImpl)
 	userControllerImpl := controller2.NewUserController(router, userServiceImpl, authService)
-	controllers := di.NewControllers(chatControllerImpl, userControllerImpl)
+	messageRepoImpl := repo4.NewMessageRepo(context2, db)
+	messageServiceImpl := service3.NewMessageService(messageRepoImpl, chatRepoImpl, userRepoImpl)
+	hubHub := hub.NewHub(userServiceImpl, messageServiceImpl)
+	messageControllerImpl := controller3.NewMessageController(router, messageServiceImpl, authService, hubHub, userServiceImpl)
+	loginServiceImpl := service4.NewLoginService(loginRepoImpl, authService)
+	loginControllerImpl := controller4.NewLoginController(router, loginServiceImpl)
+	controllers := di.NewControllers(chatControllerImpl, userControllerImpl, messageControllerImpl, loginControllerImpl, hubHub)
 	return controllers
 }
