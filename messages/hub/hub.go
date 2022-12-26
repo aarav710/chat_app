@@ -16,7 +16,7 @@ type HubImpl struct {
 	Clients map[*Client]*ent.User
 }
 
-type MessageBroadcast struct {
+type SendMessage struct {
 	message messageMappings.MessageResponse
 	clients []*Client
 }

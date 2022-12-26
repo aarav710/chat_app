@@ -57,13 +57,39 @@ func (client *Client) readPump() {
 			}
 			break
 		}
-		
+	
 		client.hub.BroadcastMessage(message)
 	}
 }
 
 func (client *Client) writePump() {
-	
+	ticker := time.NewTicker(pingPeriod)
+	defer func() {
+		ticker.Stop()
+		client.conn.Close()
+	}()
+	for {
+		select {
+		case message, ok := <-client.send:
+			client.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			if !ok {
+				// The hub closed the channel.
+				client.conn.WriteMessage(websocket.CloseMessage, []byte{})
+				return
+			}
+
+			err := client.conn.WriteJSON(message)
+			if err != nil {
+				return
+			}
+
+		case <-ticker.C:
+			client.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			if err := client.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				return
+			}
+		}
+	}
 }
 
 func ServeWebSocketRequests(hub Hub, w http.ResponseWriter, r *http.Request, user *ent.User) {
