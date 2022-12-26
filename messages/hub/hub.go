@@ -29,8 +29,8 @@ type UserBroadcast struct {
 type Hub interface {
 	BroadcastMessage(messageRequest messageMappings.MessageRequest) (messageMappings.MessageResponse, error)
 	UserJoin(UserBroadcast UserBroadcast) error
-	UserUnregister(uid string) error
 	Start()
+	UserLeave(client *Client) error 
 }
 
 func NewHub(userService userService.UserService, messageService messageService.MessageService) Hub {
@@ -93,6 +93,7 @@ func (hub *HubImpl) UserJoin(userBroadcast UserBroadcast) error {
 	return nil
 }
 
-func (hub *HubImpl) UserUnregister(uid string) error {
+func (hub *HubImpl) UserLeave(client *Client) error {
+	hub.Unregister <- client
 	return nil
 }

@@ -3,6 +3,7 @@ package hub
 import (
 	"chatapp/backend/ent"
 	"chatapp/backend/messages"
+	"log"
 	"net/http"
 	"time"
 
@@ -39,6 +40,31 @@ type Client struct {
 	send chan messages.MessageResponse
 }
 
+func (client *Client) readPump() {
+	defer func() {
+		client.hub.UserLeave(client)
+		client.conn.Close()
+	}()
+	client.conn.SetReadLimit(maxMessageSize)
+	client.conn.SetReadDeadline(time.Now().Add(pongWait))
+	client.conn.SetPongHandler(func(string) error { client.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+	for {
+		var message messages.MessageRequest
+		err := client.conn.ReadJSON(&message)
+		if err != nil {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				log.Printf("error: %v", err)
+			}
+			break
+		}
+		
+		client.hub.BroadcastMessage(message)
+	}
+}
+
+func (client *Client) writePump() {
+	
+}
 
 func ServeWebSocketRequests(hub Hub, w http.ResponseWriter, r *http.Request, user *ent.User) {
 	conn, err := upgrader.Upgrade(w, r, nil)
@@ -48,5 +74,6 @@ func ServeWebSocketRequests(hub Hub, w http.ResponseWriter, r *http.Request, use
 	client := Client{hub: hub, conn: conn, send: make(chan messages.MessageResponse)}
 	userBroadcast := UserBroadcast{Client: &client, user: user}
 	hub.UserJoin(userBroadcast)
-	
+	go client.readPump()
+	go client.writePump()
 }
