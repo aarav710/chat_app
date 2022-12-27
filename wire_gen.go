@@ -45,6 +45,7 @@ func InitializeDI(context2 context.Context, router *gin.Engine, db *ent.Client, 
 	messageControllerImpl := controller3.NewMessageController(router, messageServiceImpl, authService, hubHub, userServiceImpl)
 	loginServiceImpl := service4.NewLoginService(loginRepoImpl, authService)
 	loginControllerImpl := controller4.NewLoginController(router, loginServiceImpl)
-	controllers := di.NewControllers(chatControllerImpl, userControllerImpl, messageControllerImpl, loginControllerImpl, hubHub)
+	chatWebsocketCtrlImpl := controller.NewChatWebsocketCtrl(hubHub, router, userServiceImpl, authService)
+	controllers := di.NewControllers(chatControllerImpl, userControllerImpl, messageControllerImpl, loginControllerImpl, chatWebsocketCtrlImpl)
 	return controllers
 }

@@ -16,11 +16,6 @@ type HubImpl struct {
 	Clients map[*Client]*ent.User
 }
 
-type SendMessage struct {
-	message messageMappings.MessageResponse
-	clients []*Client
-}
-
 type UserBroadcast struct {
 	Client *Client
 	user *ent.User
@@ -60,6 +55,8 @@ func (hub *HubImpl) Start() {
 				delete(hub.Clients, client)
 				close(client.send)
 			}
+		default:
+			panic("not implemented this default case yet")
 		}
 
 	}
