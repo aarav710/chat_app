@@ -16,6 +16,7 @@ type ChatRepoImpl struct {
 
 type ChatRepo interface {
     FindChatsByUserId(userId int) ([]*ent.Chat, error)
+	FindChatsByUserIdWithLatestMessage(userId int) ([]*ent.Chat, error)
 	FindChatById(chatId int) (*ent.Chat, error)
 	CreateChat(chatRequest chatMappings.ChatRequest, userId int) (*ent.Chat, error)
 	UpdateChat(chatRequest chatMappings.ChatRequest, chatId int) (*ent.Chat, error)
@@ -32,6 +33,20 @@ func (repo *ChatRepoImpl) FindChatsByUserId(userId int) ([]*ent.Chat, error) {
 	                                    Order(ent.Desc(message.FieldCreatedAt)).
 	                                    QueryChat().
 	                                    Where(chat.HasUsersWith(user.ID(userId))).
+	                                    All(repo.ctx)
+	return chats, err
+}
+
+func (repo *ChatRepoImpl) FindChatsByUserIdWithLatestMessage(userId int) ([]*ent.Chat, error) {
+	chats, err := repo.db.Message.Query().
+	                                    Order(ent.Desc(message.FieldCreatedAt)).
+	                                    QueryChat().
+	                                    Where(chat.HasUsersWith(user.ID(userId))).
+										WithMessages(func(q *ent.MessageQuery) {
+											q.Order(ent.Desc(message.FieldCreatedAt))
+											q.Limit(1)              
+											q.WithUser()           
+										}).
 	                                    All(repo.ctx)
 	return chats, err
 }
