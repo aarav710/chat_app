@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"chatapp/backend/auth"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -56,4 +57,9 @@ func (controller *AuthenticationControllerImpl) AuthorizeUser(roles []string) gi
 		c.Set("uid", "ckuEB1qhPbT1Ks96yg7w2qY7p333")
 		c.Next()
 	}
+}
+
+func AuthorizeWebsocketConnection(request *http.Request) string {
+	// actual implementation is left
+	return "ckuEB1qhPbT1Ks96yg7w2qY7p333"
 }

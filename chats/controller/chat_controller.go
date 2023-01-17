@@ -68,9 +68,13 @@ func (controller *ChatControllerImpl) FindChatsByUser(c *gin.Context) {
 		c.Error(err)
 		return 
 	}
-    chatsResponse := make([]chatMappings.ChatResponse, 0)
+    chatsResponse := make([]chatMappings.ChatDetailResponse, 0)
 	for _, chat := range chats {
-		chatResponse := chatMappings.EntToChatResponse(chat)
+		chatResponse, err := chatMappings.EntToChatDetailResponse(chat)
+		if err != nil {
+			c.Error(err)
+			return 
+		}
 		chatsResponse = append(chatsResponse, chatResponse)
 	}
 	c.JSON(http.StatusOK, chatsResponse)

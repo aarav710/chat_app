@@ -21,6 +21,7 @@ type ChatService interface {
 	AddUserToChat(user *ent.User, toBeAddedUserId, chatId int) (*ent.User, error)
 	RemoveUserFromChat(user *ent.User, toBeRemovedUserId, chatId int) error
 	DeleteChat(user *ent.User, chatId int) error
+	UserIsInChat(userId, chatId int) (bool, error)
 }
 
 func NewChatService(chatRepo repo.ChatRepo, userRepo userRepo.UserRepo) *ChatServiceImpl {
@@ -29,7 +30,7 @@ func NewChatService(chatRepo repo.ChatRepo, userRepo userRepo.UserRepo) *ChatSer
 }
 
 func (service *ChatServiceImpl) FindChatsByUserId(userId int) ([]*ent.Chat, error) {
-	chats, err := service.chatRepo.FindChatsByUserId(userId)
+	chats, err := service.chatRepo.FindChatsByUserIdWithLatestMessage(userId)
 	return chats, err
 }
 
@@ -173,4 +174,12 @@ func (service *ChatServiceImpl) DeleteChat(user *ent.User, chatId int) error {
 		return err
 	}
 	return nil
+}
+
+func (service *ChatServiceImpl) UserIsInChat(userId, chatId int) (bool, error) {
+	isUserInChat, err := service.userRepo.IsUserInChat(userId, chatId)
+	if err != nil {
+		return false, err
+	}
+	return isUserInChat, nil
 }
